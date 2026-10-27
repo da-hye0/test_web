@@ -91,6 +91,7 @@ button, input, select { font: inherit; color: inherit; }
 
 .topbar-row {
   position: relative;
+  z-index: 2; /* 검색 후보 목록이 아래 필터 줄 위에 뜨도록 */
   display: flex;
   align-items: center;
   gap: 16px;

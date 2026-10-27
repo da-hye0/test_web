@@ -49,14 +49,9 @@ $('#recenter').addEventListener('click', () => {
   if (radiusCircle) map.fitBounds(radiusCircle.getBounds(), { padding: [20, 20] });
 });
 
-// ---------- API ----------
+// ---------- 데이터 (providers.js) ----------
 
-async function api(path, params) {
-  const res = await fetch(`${path}?${new URLSearchParams(params)}`);
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || `요청 실패 (${res.status})`);
-  return body;
-}
+const backendReady = createBackend();
 
 // ---------- 표시 ----------
 
@@ -89,8 +84,9 @@ async function setCenter(lat, lng, label) {
 
   if (!label) {
     const center = state.center;
-    api('/api/reverse', { lat, lng })
-      .then(({ address }) => {
+    backendReady
+      .then((backend) => backend.reverse(lat, lng))
+      .then((address) => {
         if (address && state.center === center) {
           center.label = address;
           setOrigin(address);
@@ -125,11 +121,12 @@ async function loadPlaces() {
   markers.clear();
 
   try {
-    const { places, provider } = await api('/api/places', { lat: center.lat, lng: center.lng, radius, type });
+    const backend = await backendReady;
+    const places = await backend.places(center.lat, center.lng, radius, type);
     // 응답이 늦게 오는 사이 다른 검색이 시작됐으면 무시
     if (state.center !== center || state.radius !== radius || state.type !== type) return;
     state.places = places;
-    render(provider);
+    render(backend.provider);
   } catch (e) {
     setStatus(`👻 ${escapeHtml(e.message)}`, true);
   }
@@ -225,7 +222,7 @@ $('#search-form').addEventListener('submit', async (e) => {
   suggestions.hidden = true;
   setStatus('🔮 주소를 찾는 중…');
   try {
-    const { results } = await api('/api/geocode', { q });
+    const results = await (await backendReady).geocode(q);
     if (!results.length) return setStatus('👻 주소를 찾지 못했어요. 다르게 입력해보세요.', true);
     if (results.length === 1) return setCenter(results[0].lat, results[0].lng, results[0].name);
     // 후보가 여러 개면 고르게 함

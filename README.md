@@ -53,11 +53,23 @@ server.js          # 정적 파일 + /api/geocode, /api/reverse, /api/places (AP
 public/index.html
 public/style.css   # Stitch 디자인 시스템 토큰
 public/app.js      # Leaflet 지도, 검색, 목록 렌더링
+public/providers.js # 데이터 백엔드 선택: server.js → 카카오 JS SDK → OpenStreetMap
+public/config.js   # 정적 배포용 설정 (카카오 JavaScript 키)
 scripts/stitch.js  # Google Stitch API CLI
 design/            # Stitch 결과물 & 스크린샷
 ```
 
-## 무료 배포 (Render)
+## 무료 배포 ① GitHub Pages (서버 없이)
+`main`에 push하면 `.github/workflows/pages.yml`이 `public/` 폴더를 자동 배포합니다.
+→ https://da-hye0.github.io/test_web/
+
+- 처음 한 번만: 저장소 **Settings → Pages → Source: GitHub Actions** 선택
+- 서버가 없으므로 브라우저가 지도 API를 직접 호출합니다 (`public/providers.js`).
+  - 기본: OpenStreetMap
+  - 카카오 데이터를 쓰려면 `public/config.js`에 카카오 **JavaScript 키**를 넣고,
+    카카오 developers → 플랫폼 → Web에 `https://da-hye0.github.io`를 등록하세요.
+
+## 무료 배포 ② Render (Node 서버 그대로)
 1. 이 폴더를 GitHub 저장소에 올립니다 (`.env`는 자동으로 제외됨).
 2. [render.com](https://render.com)에 GitHub로 가입 → **New + → Blueprint** → 저장소 선택.
 3. `KAKAO_REST_API_KEY` 입력(선택) → **Apply**. 몇 분 뒤 `https://matjip-finder-xxxx.onrender.com` 주소가 생깁니다.
