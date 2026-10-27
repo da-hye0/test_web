@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>근처 맛집·술집 - 할로윈 에디션</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface-variant": "#e0c0af",
+            "surface-container-lowest": "#0f0d16",
+            "inverse-primary": "#994700",
+            "on-secondary-fixed-variant": "#6900b3",
+            "surface": "#14121b",
+            "outline": "#a78b7c",
+            "primary-fixed-dim": "#ffb68a",
+            "on-tertiary-container": "#004119",
+            "secondary-container": "#6f00be",
+            "on-error": "#690005",
+            "surface-dim": "#14121b",
+            "on-secondary-container": "#d6a9ff",
+            "on-background": "#e6e0ee",
+            "secondary-fixed": "#f0dbff",
+            "error-container": "#93000a",
+            "on-surface": "#e6e0ee",
+            "on-tertiary": "#003915",
+            "surface-container": "#211e28",
+            "tertiary-fixed-dim": "#4ae176",
+            "secondary": "#ddb7ff",
+            "on-error-container": "#ffdad6",
+            "secondary-fixed-dim": "#ddb7ff",
+            "on-secondary": "#490080",
+            "on-primary": "#522300",
+            "on-primary-container": "#5d2900",
+            "primary": "#ffb68a",
+            "inverse-surface": "#e6e0ee",
+            "on-secondary-fixed": "#2c0051",
+            "inverse-on-surface": "#322f39",
+            "surface-bright": "#3b3842",
+            "on-primary-fixed": "#321300",
+            "surface-tint": "#ffb68a",
+            "tertiary-fixed": "#6bff8f",
+            "on-primary-fixed-variant": "#743500",
+            "error": "#ffb4ab",
+            "surface-container-highest": "#36333e",
+            "on-tertiary-fixed-variant": "#005321",
+            "on-tertiary-fixed": "#002109",
+            "primary-fixed": "#ffdbc8",
+            "surface-container-low": "#1c1a24",
+            "tertiary-container": "#00b954",
+            "outline-variant": "#584235",
+            "tertiary": "#4ae176",
+            "surface-container-high": "#2b2933",
+            "background": "#14121b",
+            "primary-container": "#ff7b00",
+            "surface-variant": "#36333e"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "2rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem",
+            "margin-lg": "2rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "margin": "1.25rem",
+            "gutter-sm": "0.75rem",
+            "space-md": "1rem"
+          },
+          "fontFamily": {
+            "headline-xl": ["Bricolage Grotesque"],
+            "body-lg": ["Noto Sans"],
+            "headline-xl-mobile": ["Bricolage Grotesque"],
+            "label-md": ["Noto Sans"],
+            "label-lg": ["Noto Sans"],
+            "headline-md": ["Bricolage Grotesque"],
+            "body-md": ["Noto Sans"],
+            "label-sm": ["Noto Sans"],
+            "headline-lg": ["Bricolage Grotesque"],
+            "body-sm": ["Noto Sans"],
+            "headline-sm": ["Bricolage Grotesque"],
+            "headline-lg-mobile": ["Bricolage Grotesque"]
+          },
+          "fontSize": {
+            "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-xl-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "fontWeight": "700" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "700" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    
+    /* Subtle spooky glow styling */
+    .glow-orange {
+      box-shadow: 0 0 20px rgba(255, 123, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.8);
+    }
+    .glow-purple {
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.45), 0 4px 12px rgba(0, 0, 0, 0.8);
+    }
+    .glow-green {
+      box-shadow: 0 0 16px rgba(74, 225, 118, 0.45);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.5);
+    }
+
+    /* Floating bats animation */
+    @keyframes float-bat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(4deg); }
+    }
+    .animate-bat {
+      animation: float-bat 4s ease-in-out infinite;
+    }
+    .animate-bat-delayed {
+      animation: float-bat 4.8s ease-in-out infinite 1.2s;
+    }
+
+    /* Radar radar pulse */
+    @keyframes radar-pulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+    .radar-wave {
+      animation: radar-pulse 2.2s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+    }
+
+    /* Custom thin scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f0d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #36333e;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ff7b00;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md text-body-md overflow-hidden antialiased selection:bg-primary-container selection:text-surface">
+<!-- ================= TOP APP BAR (Shared Component Anchor) ================= -->
+<header class="docked full-width top-0 sticky z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-md shadow-lg shadow-surface-container-lowest/50 border-b border-outline-variant/30 flex flex-col relative overflow-hidden">
+<!-- Atmospheric Ambient Halloween Gradients & Deco Elements -->
+<div class="absolute -top-12 left-1/4 w-96 h-28 bg-primary-container/15 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -top-10 right-1/4 w-80 h-28 bg-secondary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Web Corner Cobweb SVG motif (Top Right) -->
+<div class="absolute top-0 right-0 w-24 h-24 pointer-events-none opacity-20 text-secondary">
+<svg class="w-full h-full fill-none stroke-current" stroke-width="1.2" viewbox="0 0 100 100">
+<path d="M0,0 Q60,10 100,100"></path>
+<path d="M0,0 Q30,40 100,100"></path>
+<path d="M0,0 Q10,60 100,100"></path>
+<path d="M20,0 Q40,40 0,60"></path>
+<path d="M45,0 Q70,45 0,85"></path>
+<path d="M70,0 Q90,70 0,100"></path>
+</svg>
+</div>
+<!-- Main Header Row: Logo & Search Engine -->
+<div class="w-full px-6 py-3 flex items-center justify-between gap-4">
+<!-- Brand Logo / Product Name with Pumpkin -->
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center">
+<span class="text-3xl filter drop-shadow-[0_0_10px_rgba(255,123,0,0.8)]">🎃</span>
+<!-- Tiny floating bat accessory -->
+<span class="absolute -top-2 -right-2 text-xs animate-bat">🦇</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-headline-md font-headline-md text-primary-container dark:text-primary tracking-tight flex items-center gap-1.5 drop-shadow-[0_0_8px_rgba(255,123,0,0.4)]">
+            근처 맛집·술집
+            <span class="text-xs px-2 py-0.5 rounded-full bg-secondary-container/40 text-secondary border border-secondary/30 font-body-sm align-middle tracking-normal">HALLOWEEN NIGHT</span>
+</h1>
+</div>
+</div>
+<!-- Center Search Bar Row (Glass Capsule) -->
+<div class="flex-1 max-w-2xl mx-4">
+<div class="relative flex items-center rounded-full bg-surface-container-low border border-outline-variant/50 focus-within:border-tertiary focus-within:shadow-[0_0_16px_rgba(74,225,118,0.3)] transition-all duration-200">
+<div class="pl-4 pr-2 flex items-center text-primary-container">
+<span class="material-symbols-outlined text-xl" data-icon="search">search</span>
+</div>
+<input class="w-full bg-transparent py-2.5 text-on-surface placeholder:text-on-surface-variant/60 font-body-md text-body-md focus:outline-none border-0 ring-0 focus:ring-0" placeholder="주소나 장소명 (예: 강남역, 성수동)" type="text" value="강남역"/>
+<div class="pr-2 flex items-center gap-1.5">
+<!-- Search Execute Button -->
+<button class="bg-primary-container hover:bg-inverse-primary text-surface-container-lowest font-headline-sm text-label-lg px-4 py-2 rounded-full flex items-center gap-1.5 shadow-[0_0_14px_rgba(255,123,0,0.4)] active:scale-95 transition-all duration-150">
+<span class="material-symbols-outlined text-lg" data-icon="search">search</span>
+<span>검색</span>
+</button>
+<!-- Ghostly My Location Button -->
+<button class="bg-surface-container-high/70 hover:bg-surface-bright text-tertiary hover:text-tertiary-fixed font-headline-sm text-label-lg px-3.5 py-2 rounded-full border border-tertiary/40 flex items-center gap-1 glow-green active:scale-95 transition-all duration-150">
+<span class="material-symbols-outlined text-lg" data-icon="my_location" data-weight="fill" style="font-variation-settings: 'FILL' 1;">my_location</span>
+<span>내 위치</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Trailing Controls & Quick Icons -->
+<div class="flex items-center gap-3">
+<!-- Floating Moon & Bat mood badge -->
+<div class="hidden xl:flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-secondary/20 text-secondary-fixed text-label-md">
+<span class="text-sm">🌕</span>
+<span>심야 영업 중</span>
+<span class="animate-bat-delayed text-xs">🦇</span>
+</div>
+<button aria-label="필터 설정" class="w-10 h-10 rounded-full bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors border border-outline-variant/30 active:scale-95">
+<span class="material-symbols-outlined text-xl" data-icon="tune">tune</span>
+</button>
+<button aria-label="모드 전환" class="w-10 h-10 rounded-full bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors border border-outline-variant/30 active:scale-95">
+<span class="material-symbols-outlined text-xl" data-icon="dark_mode" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dark_mode</span>
+</button>
+</div>
+</div>
+<!-- Sub-row: Category Filter Chips & Radius Selector -->
+<div class="w-full px-6 py-2 bg-surface-container-lowest/60 border-t border-outline-variant/20 flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="text-label-md font-label-md text-on-surface-variant mr-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-base text-secondary" data-icon="explore">explore</span>
+          카테고리:
+        </span>
+<!-- Active Chip: 전체 (as defined in style_active_navigation) -->
+<button class="text-tertiary dark:text-tertiary font-bold border-b-2 border-tertiary pb-1 px-3 py-1 bg-surface-container/60 rounded-t-lg transition-colors flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary shadow-[0_0_6px_#4ae176]"></span>
+<span>전체</span>
+</button>
+<!-- Chip 2: 🎃 맛집 -->
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:text-primary hover:bg-surface-container-high/40 transition-colors duration-150 px-3 py-1 rounded-full flex items-center gap-1 border border-outline-variant/30">
+<span>🎃 맛집</span>
+</button>
+<!-- Chip 3: 🦇 술집 -->
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface hover:text-primary hover:bg-surface-container-high/40 transition-colors duration-150 px-3 py-1 rounded-full flex items-center gap-1 border border-outline-variant/30">
+<span>🦇 술집</span>
+</button>
+</div>
+<!-- Radius Selector Dropdown -->
+<div class="flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">탐색 반경:</span>
+<div class="relative inline-block">
+<select class="bg-surface-container-high text-primary font-label-lg font-bold text-label-md pl-3 pr-8 py-1 rounded-full border border-primary-container/40 focus:outline-none focus:border-primary cursor-pointer appearance-none shadow-sm">
+<option value="300">반경 300m</option>
+<option selected="" value="500">반경 500m</option>
+<option value="1000">반경 1km</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-sm text-primary pointer-events-none" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+</header>
+<!-- ================= MAIN VIEWPORT (Split View) ================= -->
+<main class="flex-1 flex overflow-hidden relative">
+<!-- ================= LEFT SIDEBAR (SideNavBar Component Blueprint) ================= -->
+<aside class="w-[410px] flex-shrink-0 bg-surface-container-low/95 backdrop-blur-xl border-r border-outline-variant/30 flex flex-col z-30 shadow-2xl shadow-surface-container-lowest">
+<!-- Sticky Sidebar Top Status -->
+<div class="p-4 border-b border-outline-variant/20 bg-surface-container/70 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container animate-ping"></span>
+<span class="font-headline-sm text-headline-sm text-primary flex items-center gap-1">
+              반경 500m 안에 맛집·술집 
+              <span class="text-primary-container font-headline-md text-headline-md px-1.5 py-0.5 rounded-md bg-primary-container/10 border border-primary-container/30">24곳</span>
+</span>
+</div>
+<span class="text-label-sm font-label-sm text-secondary bg-secondary-container/30 px-2 py-0.5 rounded-full border border-secondary/20">가까운 순</span>
+</div>
+<div class="text-body-sm font-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="location_on" data-weight="fill" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<span>기준: 서울 강남구 강남대로 지하 396 (강남역 11번 출구)</span>
+</div>
+</div>
+<!-- Scrollable Place Cards List -->
+<div class="flex-1 overflow-y-auto p-3 space-y-3">
+<!-- CARD 1: 잭오랜턴 솥밥 & 탕 (Active/Highlighted) -->
+<article class="bg-surface-container/90 hover:bg-surface-container-high/80 rounded-2xl p-4 border border-primary-container/60 transition-all duration-200 glow-orange relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 text-6xl opacity-5 pointer-events-none group-hover:scale-110 transition-transform">🎃</div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="bg-primary-container text-surface-container-lowest font-headline-sm text-label-md px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+<span>🎃</span> 맛집
+              </span>
+<span class="text-label-sm font-label-sm text-tertiary bg-tertiary/10 border border-tertiary/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> 영업 중
+              </span>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-primary-container font-extrabold tracking-tight drop-shadow-[0_0_8px_rgba(255,123,0,0.5)]">120m</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-sm text-on-surface font-bold tracking-tight mb-1 group-hover:text-primary transition-colors">
+            잭오랜턴 솥밥 &amp; 탕
+          </h3>
+<div class="text-label-md font-label-md text-secondary-fixed-dim mb-2 flex items-center gap-1">
+<span>한식</span>
+<span class="text-outline-variant">•</span>
+<span>국밥 / 솥밥</span>
+<span class="text-outline-variant">•</span>
+<span class="text-primary">🎃 4.9 (182)</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant/90 mb-3 bg-surface-container-low/70 p-2.5 rounded-xl border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="pin_drop">pin_drop</span>
+<span class="truncate">서울 강남구 역삼로 123 1층</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="call">call</span>
+<span class="tracking-wide text-on-surface">02-555-1031</span>
+</div>
+</div>
+<!-- Bottom Outlined Action Chips -->
+<div class="flex items-center gap-2 pt-1 border-t border-outline-variant/20">
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-primary/50 transition-all flex items-center justify-center gap-1" href="#kakaomap">
+<span class="text-xs">🟡</span> 카카오맵
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-primary/50 transition-all flex items-center justify-center gap-1" href="#navermap">
+<span class="text-xs">🟢</span> 네이버지도
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-primary-container/20 hover:bg-primary-container/30 text-label-md font-label-md text-primary font-bold border border-primary-container/50 transition-all flex items-center justify-center gap-1" href="#directions">
+<span class="material-symbols-outlined text-sm" data-icon="navigation">navigation</span> 길찾기
+            </a>
+</div>
+</article>
+<!-- CARD 2: 심야 유령 펍 '고스트 브루' -->
+<article class="bg-surface-container/70 hover:bg-surface-container-high/70 rounded-2xl p-4 border border-secondary/30 transition-all duration-200 hover:glow-purple relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 text-6xl opacity-5 pointer-events-none group-hover:scale-110 transition-transform">👻</div>
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="bg-secondary-container text-secondary-fixed font-headline-sm text-label-md px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 border border-secondary/40">
+<span>🦇</span> 술집
+              </span>
+<span class="text-label-sm font-label-sm text-secondary bg-secondary-container/20 border border-secondary/30 px-2 py-0.5 rounded-full">
+                수제맥주 특화
+              </span>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-secondary font-extrabold tracking-tight">180m</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-sm text-on-surface font-bold tracking-tight mb-1 group-hover:text-secondary-fixed transition-colors">
+            심야 유령 펍 '고스트 브루'
+          </h3>
+<div class="text-label-md font-label-md text-secondary-fixed-dim mb-2 flex items-center gap-1">
+<span>술집</span>
+<span class="text-outline-variant">•</span>
+<span>펍·맥주</span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">🦇 4.8 (94)</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant/90 mb-3 bg-surface-container-low/70 p-2.5 rounded-xl border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="pin_drop">pin_drop</span>
+<span class="truncate">서울 강남구 테헤란로4길 28 지하 1층</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="call">call</span>
+<span class="tracking-wide text-on-surface">02-567-9931</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1 border-t border-outline-variant/20">
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-secondary/50 transition-all flex items-center justify-center gap-1" href="#kakaomap">
+<span class="text-xs">🟡</span> 카카오맵
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-secondary/50 transition-all flex items-center justify-center gap-1" href="#navermap">
+<span class="text-xs">🟢</span> 네이버지도
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-secondary-container/20 hover:bg-secondary-container/40 text-label-md font-label-md text-secondary font-bold border border-secondary/40 transition-all flex items-center justify-center gap-1" href="#directions">
+<span class="material-symbols-outlined text-sm" data-icon="navigation">navigation</span> 길찾기
+            </a>
+</div>
+</article>
+<!-- CARD 3: 할로윈 마녀의 화덕피자 -->
+<article class="bg-surface-container/70 hover:bg-surface-container-high/70 rounded-2xl p-4 border border-outline-variant/30 transition-all duration-200 hover:glow-orange relative overflow-hidden group">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-2">
+<span class="bg-primary-container text-surface-container-lowest font-headline-sm text-label-md px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+<span>🎃</span> 맛집
+              </span>
+<span class="text-label-sm font-label-sm text-tertiary bg-tertiary/10 border border-tertiary/20 px-2 py-0.5 rounded-full">
+                화덕 피자
+              </span>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-primary-container font-extrabold tracking-tight">260m</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-sm text-on-surface font-bold tracking-tight mb-1 group-hover:text-primary transition-colors">
+            할로윈 마녀의 화덕피자
+          </h3>
+<div class="text-label-md font-label-md text-secondary-fixed-dim mb-2 flex items-center gap-1">
+<span>양식</span>
+<span class="text-outline-variant">•</span>
+<span>피자·파스타</span>
+<span class="text-outline-variant">•</span>
+<span class="text-primary">🎃 4.7 (140)</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant/90 mb-3 bg-surface-container-low/70 p-2.5 rounded-xl border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="pin_drop">pin_drop</span>
+<span class="truncate">서울 강남구 강남대로94길 19</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="call">call</span>
+<span class="tracking-wide text-on-surface">02-538-4420</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1 border-t border-outline-variant/20">
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-primary/50 transition-all flex items-center justify-center gap-1" href="#kakaomap">
+<span class="text-xs">🟡</span> 카카오맵
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-primary/50 transition-all flex items-center justify-center gap-1" href="#navermap">
+<span class="text-xs">🟢</span> 네이버지도
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-primary-container/20 hover:bg-primary-container/30 text-label-md font-label-md text-primary font-bold border border-primary-container/50 transition-all flex items-center justify-center gap-1" href="#directions">
+<span class="material-symbols-outlined text-sm" data-icon="navigation">navigation</span> 길찾기
+            </a>
+</div>
+</article>
+<!-- CARD 4: 박쥐 동굴 이자카야 -->
+<article class="bg-surface-container/70 hover:bg-surface-container-high/70 rounded-2xl p-4 border border-outline-variant/30 transition-all duration-200 hover:glow-purple relative overflow-hidden group">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container text-secondary-fixed font-headline-sm text-label-md px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 border border-secondary/40">
+<span>🦇</span> 술집
+              </span>
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container-high px-2 py-0.5 rounded-full">
+                프라이빗 룸
+              </span>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-secondary font-extrabold tracking-tight">340m</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-sm text-on-surface font-bold tracking-tight mb-1 group-hover:text-secondary-fixed transition-colors">
+            박쥐 동굴 이자카야
+          </h3>
+<div class="text-label-md font-label-md text-secondary-fixed-dim mb-2 flex items-center gap-1">
+<span>술집</span>
+<span class="text-outline-variant">•</span>
+<span>이자카야·요리주점</span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">🦇 4.9 (210)</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant/90 mb-3 bg-surface-container-low/70 p-2.5 rounded-xl border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="pin_drop">pin_drop</span>
+<span class="truncate">서울 강남구 봉은사로2길 17</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="call">call</span>
+<span class="tracking-wide text-on-surface">02-512-8804</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1 border-t border-outline-variant/20">
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-secondary/50 transition-all flex items-center justify-center gap-1" href="#kakaomap">
+<span class="text-xs">🟡</span> 카카오맵
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-secondary/50 transition-all flex items-center justify-center gap-1" href="#navermap">
+<span class="text-xs">🟢</span> 네이버지도
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-secondary-container/20 hover:bg-secondary-container/40 text-label-md font-label-md text-secondary font-bold border border-secondary/40 transition-all flex items-center justify-center gap-1" href="#directions">
+<span class="material-symbols-outlined text-sm" data-icon="navigation">navigation</span> 길찾기
+            </a>
+</div>
+</article>
+<!-- CARD 5: 으스스 매운 갈비찜 -->
+<article class="bg-surface-container/70 hover:bg-surface-container-high/70 rounded-2xl p-4 border border-outline-variant/30 transition-all duration-200 hover:glow-orange relative overflow-hidden group">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-2">
+<span class="bg-primary-container text-surface-container-lowest font-headline-sm text-label-md px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1">
+<span>🎃</span> 맛집
+              </span>
+<span class="text-label-sm font-label-sm text-error bg-error-container/30 text-error-container border border-error/30 px-2 py-0.5 rounded-full">
+                화끈한 매운맛
+              </span>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-primary-container font-extrabold tracking-tight">410m</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-sm text-on-surface font-bold tracking-tight mb-1 group-hover:text-primary transition-colors">
+            으스스 매운 갈비찜
+          </h3>
+<div class="text-label-md font-label-md text-secondary-fixed-dim mb-2 flex items-center gap-1">
+<span>한식</span>
+<span class="text-outline-variant">•</span>
+<span>육류·고기요리</span>
+<span class="text-outline-variant">•</span>
+<span class="text-primary">🎃 4.6 (88)</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant/90 mb-3 bg-surface-container-low/70 p-2.5 rounded-xl border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="pin_drop">pin_drop</span>
+<span class="truncate">서울 강남구 강남대로98길 16</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="call">call</span>
+<span class="tracking-wide text-on-surface">02-501-7729</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1 border-t border-outline-variant/20">
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-primary/50 transition-all flex items-center justify-center gap-1" href="#kakaomap">
+<span class="text-xs">🟡</span> 카카오맵
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-primary/50 transition-all flex items-center justify-center gap-1" href="#navermap">
+<span class="text-xs">🟢</span> 네이버지도
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-primary-container/20 hover:bg-primary-container/30 text-label-md font-label-md text-primary font-bold border border-primary-container/50 transition-all flex items-center justify-center gap-1" href="#directions">
+<span class="material-symbols-outlined text-sm" data-icon="navigation">navigation</span> 길찾기
+            </a>
+</div>
+</article>
+<!-- CARD 6: 보름달 와인바 '루나 루나' -->
+<article class="bg-surface-container/70 hover:bg-surface-container-high/70 rounded-2xl p-4 border border-outline-variant/30 transition-all duration-200 hover:glow-purple relative overflow-hidden group">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-2">
+<span class="bg-secondary-container text-secondary-fixed font-headline-sm text-label-md px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 border border-secondary/40">
+<span>🦇</span> 술집
+              </span>
+<span class="text-label-sm font-label-sm text-secondary bg-secondary-container/20 border border-secondary/30 px-2 py-0.5 rounded-full">
+                루프탑 &amp; 와인
+              </span>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-secondary font-extrabold tracking-tight">480m</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-sm text-on-surface font-bold tracking-tight mb-1 group-hover:text-secondary-fixed transition-colors">
+            보름달 와인바 '루나 루나'
+          </h3>
+<div class="text-label-md font-label-md text-secondary-fixed-dim mb-2 flex items-center gap-1">
+<span>술집</span>
+<span class="text-outline-variant">•</span>
+<span>와인바</span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">🦇 4.9 (162)</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm text-on-surface-variant/90 mb-3 bg-surface-container-low/70 p-2.5 rounded-xl border border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="pin_drop">pin_drop</span>
+<span class="truncate">서울 강남구 테헤란로1길 32 5층 루프탑</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="call">call</span>
+<span class="tracking-wide text-on-surface">02-556-3201</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1 border-t border-outline-variant/20">
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-secondary/50 transition-all flex items-center justify-center gap-1" href="#kakaomap">
+<span class="text-xs">🟡</span> 카카오맵
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-surface-container-high/60 hover:bg-surface-bright text-label-md font-label-md text-on-surface border border-outline-variant/40 hover:border-secondary/50 transition-all flex items-center justify-center gap-1" href="#navermap">
+<span class="text-xs">🟢</span> 네이버지도
+            </a>
+<a class="flex-1 py-1.5 text-center rounded-lg bg-secondary-container/20 hover:bg-secondary-container/40 text-label-md font-label-md text-secondary font-bold border border-secondary/40 transition-all flex items-center justify-center gap-1" href="#directions">
+<span class="material-symbols-outlined text-sm" data-icon="navigation">navigation</span> 길찾기
+            </a>
+</div>
+</article>
+</div>
+<!-- Sticky Sidebar Bottom Footer (from SideNavBar Component Spec) -->
+<footer class="p-3 bg-surface-container-lowest border-t border-outline-variant/30 flex items-center justify-between text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="database">database</span>
+<span class="text-label-md font-label-md">데이터: 카카오 로컬</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-label-sm text-outline font-label-sm">실시간 갱신됨</span>
+<button class="text-label-md font-label-md text-secondary hover:text-secondary-fixed flex items-center gap-0.5">
+<span class="material-symbols-outlined text-sm" data-icon="help_outline">help_outline</span>
+<span>문의하기</span>
+</button>
+</div>
+</footer>
+</aside>
+<!-- ================= RIGHT MAP VIEWPORT ================= -->
+<section class="flex-1 relative bg-surface-container-lowest overflow-hidden select-none" data-location="Seoul, Gangnam">
+<!-- Vector-like Night Map Canvas Layer (Custom Styled Dark Halloween Map Graphic) -->
+<div class="absolute inset-0 w-full h-full bg-[#0d0b14] overflow-hidden">
+<!-- SVG Street Grid Simulation (Teheran-ro & Gangnam-daero aesthetic) -->
+<svg class="w-full h-full object-cover opacity-85" preserveaspectratio="xMidYMid slice" viewbox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<!-- Radial background gradient for night atmosphere -->
+<radialgradient cx="50%" cy="50%" id="nightGlow" r="65%">
+<stop offset="0%" stop-color="#1b152b"></stop>
+<stop offset="60%" stop-color="#120e1d"></stop>
+<stop offset="100%" stop-color="#08060c"></stop>
+</radialgradient>
+<!-- Radius Circle Gradient -->
+<radialgradient cx="50%" cy="50%" id="radiusAura" r="50%">
+<stop offset="0%" stop-color="#ff7b00" stop-opacity="0.08"></stop>
+<stop offset="85%" stop-color="#ff7b00" stop-opacity="0.03"></stop>
+<stop offset="100%" stop-color="#ff7b00" stop-opacity="0.2"></stop>
+</radialgradient>
+<!-- Road Neon Glow Filter -->
+<filter height="140%" id="roadGlow" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="blur" stddeviation="3"></fegaussianblur>
+<fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+</filter>
+</defs>
+<!-- Deep Canvas Fill -->
+<rect fill="url(#nightGlow)" height="800" width="1200"></rect>
+<!-- Urban Building Blocks (Dark Purple-Grey Polygons) -->
+<g fill="#161324" stroke="#251f38" stroke-width="1.5">
+<rect height="180" rx="8" width="140" x="180" y="80"></rect>
+<rect height="150" rx="8" width="220" x="350" y="70"></rect>
+<rect height="140" rx="8" width="190" x="620" y="90"></rect>
+<rect height="180" rx="8" width="260" x="850" y="60"></rect>
+<rect height="220" rx="8" width="150" x="160" y="320"></rect>
+<rect height="250" rx="8" width="230" x="340" y="300"></rect>
+<rect height="240" rx="8" width="210" x="620" y="300"></rect>
+<rect height="220" rx="8" width="250" x="870" y="310"></rect>
+<rect height="160" rx="8" width="150" x="190" y="600"></rect>
+<rect height="150" rx="8" width="210" x="370" y="610"></rect>
+<rect height="160" rx="8" width="180" x="640" y="610"></rect>
+<rect height="180" rx="8" width="240" x="880" y="590"></rect>
+</g>
+<!-- Secondary Alley Roads -->
+<g stroke="#26213b" stroke-linecap="round" stroke-linejoin="round" stroke-width="12">
+<line x1="100" x2="1100" y1="200" y2="200"></line>
+<line x1="100" x2="1100" y1="450" y2="450"></line>
+<line x1="280" x2="280" y1="20" y2="780"></line>
+<line x1="780" x2="780" y1="20" y2="780"></line>
+<line x1="1050" x2="1050" y1="20" y2="780"></line>
+</g>
+<!-- Major Glowing Highways / Avenues (Gangnam-daero & Teheran-ro intersection) -->
+<!-- Vertical: Gangnam-daero (강남대로) -->
+<line stroke="#372c54" stroke-width="38" x1="590" x2="590" y1="0" y2="800"></line>
+<line filter="url(#roadGlow)" opacity="0.6" stroke="#6f00be" stroke-dasharray="14 10" stroke-width="4" x1="590" x2="590" y1="0" y2="800"></line>
+<!-- Horizontal: Teheran-ro (테헤란로) -->
+<line stroke="#372c54" stroke-width="42" x1="0" x2="1200" y1="280" y2="280"></line>
+<line filter="url(#roadGlow)" opacity="0.6" stroke="#ff7b00" stroke-dasharray="18 12" stroke-width="4" x1="0" x2="1200" y1="280" y2="280"></line>
+<!-- Gangnam Station Intersection Plazas -->
+<circle cx="590" cy="280" fill="#1f1833" r="48" stroke="#584235" stroke-width="2"></circle>
+<!-- Radius 500m Big Dashed Glowing Ring from Center (590, 280) -->
+<circle cx="590" cy="280" fill="url(#radiusAura)" filter="url(#roadGlow)" r="230" stroke="#ff7b00" stroke-dasharray="10 8" stroke-width="2.5"></circle>
+<!-- Metro Exit Markers & Road Names Labeling in Map -->
+<text fill="#a78b7c" font-family="'Noto Sans'" font-size="12" font-weight="600" x="605" y="270">강남역 2호선·신분당선</text>
+<text fill="#4ae176" font-family="'Noto Sans'" font-size="11" x="605" y="295">11번 출구</text>
+<text fill="#6f00be" font-family="'Noto Sans'" font-size="12" font-weight="700" x="440" y="270">◀ 테헤란로 (역삼 방면)</text>
+<text fill="#ff7b00" font-family="'Noto Sans'" font-size="12" font-weight="700" x="605" y="420">▼ 강남대로 (양재 방면)</text>
+</svg>
+<!-- Dynamic Ambient Particles / Tiny Stars & Bats floating across Map -->
+<div class="absolute top-12 left-1/3 text-lg opacity-40 animate-bat pointer-events-none">🦇</div>
+<div class="absolute top-1/2 right-24 text-sm opacity-30 animate-bat-delayed pointer-events-none">🦇</div>
+<div class="absolute bottom-20 left-16 text-xs text-secondary opacity-30 pointer-events-none">✦</div>
+<div class="absolute top-28 right-1/4 text-xs text-primary opacity-40 pointer-events-none">✦</div>
+</div>
+<!-- ================= MAP OVERLAYS & PINS ================= -->
+<!-- 1. Center Pulse Pin: '내 위치: 강남역 11번 출구' (Position: 590, 280 mapped into relative canvas) -->
+<div class="absolute top-[35%] left-[49%] -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+<!-- Radar animation rings -->
+<div class="relative w-12 h-12 flex items-center justify-center">
+<div class="absolute w-12 h-12 rounded-full bg-cyan-400/30 radar-wave"></div>
+<div class="absolute w-8 h-8 rounded-full bg-cyan-400/40 radar-wave" style="animation-delay: 0.7s;"></div>
+<div class="w-6 h-6 rounded-full bg-cyan-400 border-2 border-white glow-cyan flex items-center justify-center shadow-lg">
+<span class="w-2.5 h-2.5 rounded-full bg-[#0d0b14]"></span>
+</div>
+</div>
+<!-- Pin Label Badge -->
+<div class="mt-1 px-3 py-1 rounded-full bg-surface-container/95 border border-cyan-400/60 shadow-lg text-cyan-300 font-label-md text-label-md flex items-center gap-1.5 backdrop-blur-md">
+<span class="material-symbols-outlined text-sm text-cyan-300" data-icon="my_location">my_location</span>
+<span class="font-bold">내 위치: 강남역 11번 출구</span>
+</div>
+</div>
+<!-- 2. Radius 500m Legend Tag on Map Ring Perimeter -->
+<div class="absolute top-[35%] left-[68%] -translate-y-1/2 z-10">
+<span class="px-2.5 py-1 rounded-full bg-surface-container-lowest/90 border border-primary-container text-primary-container text-label-sm font-bold shadow-lg flex items-center gap-1 backdrop-blur-md">
+<span>🎃</span> 탐색 반경 500m
+        </span>
+</div>
+<!-- 3. RESTAURANT PIN 1 & ACTIVE POPUP (Card 1: 잭오랜턴 솥밥 & 탕 - 120m) -->
+<div class="absolute top-[42%] left-[45%] z-30 flex flex-col items-center">
+<!-- Active Tooltip Popup Box -->
+<div class="mb-2 w-64 bg-surface-container/95 backdrop-blur-md border-2 border-primary-container rounded-2xl p-3 shadow-2xl glow-orange text-left relative transform -translate-y-1 transition-transform">
+<div class="flex items-center justify-between gap-1 mb-1">
+<span class="text-xs font-bold text-primary-container flex items-center gap-1">
+<span>🎃</span> 잭오랜턴 솥밥 &amp; 탕
+            </span>
+<span class="text-label-sm text-tertiary bg-tertiary/20 px-2 py-0.5 rounded-full font-bold">
+              영업중
+            </span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-2">
+            가까운 거리 <strong class="text-primary font-bold">120m</strong> • 한식 솥밥
+          </p>
+<div class="flex items-center gap-1.5">
+<button class="flex-1 py-1 text-center bg-primary-container text-surface-container-lowest rounded-lg font-headline-sm text-label-sm font-bold hover:brightness-110 active:scale-95 transition-all">
+              상세보기
+            </button>
+<button class="px-2 py-1 bg-surface-container-high rounded-lg text-primary text-label-sm border border-primary-container/40 flex items-center gap-0.5">
+<span class="material-symbols-outlined text-xs" data-icon="navigation">navigation</span> 길찾기
+            </button>
+</div>
+<!-- Arrow pointing down to marker -->
+<div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-surface-container rotate-45 border-r-2 border-b-2 border-primary-container"></div>
+</div>
+<!-- Glowing Pumpkin Teardrop Marker Pin -->
+<button class="relative group cursor-pointer active:scale-90 transition-transform">
+<div class="w-10 h-10 rounded-full bg-primary-container border-2 border-white flex items-center justify-center glow-orange text-xl shadow-xl">
+            🎃
+          </div>
+<span class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-primary-container rotate-45"></span>
+</button>
+</div>
+<!-- 4. BAR PIN 2 (고스트 브루 - 180m, Violet/Bat Glow Pin) -->
+<div class="absolute top-[28%] left-[58%] z-20 flex flex-col items-center">
+<button class="relative group cursor-pointer hover:scale-110 transition-transform">
+<div class="w-9 h-9 rounded-full bg-secondary-container border-2 border-secondary-fixed flex items-center justify-center glow-purple text-lg shadow-xl">
+            🦇
+          </div>
+<!-- Hover Pill -->
+<div class="hidden group-hover:flex absolute -top-8 whitespace-nowrap px-2.5 py-0.5 rounded-md bg-surface-container border border-secondary text-secondary-fixed text-label-sm font-bold shadow-lg">
+            고스트 브루 (180m)
+          </div>
+</button>
+</div>
+<!-- 5. RESTAURANT PIN 3 (마녀의 화덕피자 - 260m) -->
+<div class="absolute top-[24%] left-[42%] z-20 flex flex-col items-center">
+<button class="relative group cursor-pointer hover:scale-110 transition-transform">
+<div class="w-8 h-8 rounded-full bg-primary-container border-2 border-white flex items-center justify-center glow-orange text-base shadow-xl">
+            🎃
+          </div>
+<div class="hidden group-hover:flex absolute -top-8 whitespace-nowrap px-2 py-0.5 rounded-md bg-surface-container border border-primary-container text-primary text-label-sm font-bold shadow-lg">
+            마녀의 화덕피자 (260m)
+          </div>
+</button>
+</div>
+<!-- 6. BAR PIN 4 (박쥐 동굴 이자카야 - 340m) -->
+<div class="absolute top-[48%] left-[62%] z-20 flex flex-col items-center">
+<button class="relative group cursor-pointer hover:scale-110 transition-transform">
+<div class="w-8 h-8 rounded-full bg-secondary-container border-2 border-secondary-fixed flex items-center justify-center glow-purple text-base shadow-xl">
+            🦇
+          </div>
+<div class="hidden group-hover:flex absolute -top-8 whitespace-nowrap px-2 py-0.5 rounded-md bg-surface-container border border-secondary text-secondary-fixed text-label-sm font-bold shadow-lg">
+            박쥐 동굴 이자카야 (340m)
+          </div>
+</button>
+</div>
+<!-- 7. RESTAURANT PIN 5 (으스스 매운 갈비찜 - 410m) -->
+<div class="absolute top-[52%] left-[38%] z-20 flex flex-col items-center">
+<button class="relative group cursor-pointer hover:scale-110 transition-transform">
+<div class="w-8 h-8 rounded-full bg-primary-container border-2 border-white flex items-center justify-center glow-orange text-base shadow-xl">
+            🎃
+          </div>
+<div class="hidden group-hover:flex absolute -top-8 whitespace-nowrap px-2 py-0.5 rounded-md bg-surface-container border border-primary-container text-primary text-label-sm font-bold shadow-lg">
+            으스스 매운 갈비찜 (410m)
+          </div>
+</button>
+</div>
+<!-- 8. BAR PIN 6 (루나 루나 와인바 - 480m) -->
+<div class="absolute top-[18%] left-[54%] z-20 flex flex-col items-center">
+<button class="relative group cursor-pointer hover:scale-110 transition-transform">
+<div class="w-8 h-8 rounded-full bg-secondary-container border-2 border-secondary-fixed flex items-center justify-center glow-purple text-base shadow-xl">
+            👻
+          </div>
+<div class="hidden group-hover:flex absolute -top-8 whitespace-nowrap px-2 py-0.5 rounded-md bg-surface-container border border-secondary text-secondary-fixed text-label-sm font-bold shadow-lg">
+            루나 루나 와인바 (480m)
+          </div>
+</button>
+</div>
+<!-- ================= FLOATING MAP CONTROLS & WIDGETS ================= -->
+<!-- Top Right Floating Map Style Mode Pill -->
+<div class="absolute top-4 right-4 z-40 flex items-center gap-2 bg-surface-container-low/90 backdrop-blur-md p-1.5 rounded-2xl border border-outline-variant/30 shadow-xl">
+<button class="px-3 py-1.5 rounded-xl bg-primary-container text-surface-container-lowest font-headline-sm text-label-md font-bold flex items-center gap-1 shadow-md">
+<span>🎃</span> 할로윈 다크맵
+        </button>
+<button class="px-3 py-1.5 rounded-xl hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface font-headline-sm text-label-md transition-colors">
+          일반 지도
+        </button>
+</div>
+<!-- Floating Map Zoom & Recenter Cluster (Bottom Right) -->
+<div class="absolute bottom-6 right-6 z-40 flex flex-col items-center gap-2">
+<!-- Recenter Compass Pin Button -->
+<button class="w-11 h-11 rounded-2xl bg-surface-container/90 hover:bg-surface-container-high backdrop-blur-md text-tertiary border border-tertiary/40 flex items-center justify-center glow-green shadow-xl active:scale-95 transition-all" title="내 위치로 중심 이동">
+<span class="material-symbols-outlined text-2xl" data-icon="my_location" data-weight="fill" style="font-variation-settings: 'FILL' 1;">my_location</span>
+</button>
+<!-- Zoom In / Zoom Out Capsule -->
+<div class="flex flex-col bg-surface-container/90 backdrop-blur-md rounded-2xl border border-outline-variant/30 shadow-xl overflow-hidden">
+<button class="w-11 h-11 flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-container-high border-b border-outline-variant/20 active:scale-95 transition-all" title="확대">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+<button class="w-11 h-11 flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-container-high active:scale-95 transition-all" title="축소">
+<span class="material-symbols-outlined text-2xl" data-icon="remove">remove</span>
+</button>
+</div>
+<!-- Halloween Quick Spooky Summon / Book Button (Brand Action) -->
+<button class="w-11 h-11 rounded-2xl bg-secondary-container hover:bg-secondary-container/90 text-secondary-fixed border border-secondary/50 flex items-center justify-center glow-purple shadow-xl active:scale-95 transition-all" title="할로윈 추천 룰렛">
+<span class="text-xl">🔮</span>
+</button>
+</div>
+<!-- Map Bottom-Left Micro Legend -->
+<div class="absolute bottom-6 left-6 z-40 bg-surface-container-lowest/90 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-outline-variant/30 shadow-xl flex items-center gap-4 text-label-sm font-label-sm">
+<div class="flex items-center gap-1.5">
+<span class="text-base">🎃</span>
+<span class="text-on-surface">맛집 (14)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-base">🦇</span>
+<span class="text-secondary-fixed">술집·주점 (10)</span>
+</div>
+<div class="flex items-center gap-1.5 border-l border-outline-variant/40 pl-3">
+<span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+<span class="text-cyan-300">내 현재 위치</span>
+</div>
+</div>
+</section>
+</main>
+</body></html>

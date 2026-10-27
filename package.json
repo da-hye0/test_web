@@ -1,0 +1,14 @@
+{
+  "name": "matjip-finder",
+  "version": "1.0.0",
+  "description": "현재 위치나 주소 근처의 맛집·술집을 찾아주는 웹 애플리케이션",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
