@@ -1,0 +1,12 @@
+# Render(https://render.com) 무료 배포 설정 — "New > Blueprint"로 이 저장소를 연결하면 자동 적용
+services:
+  - type: web
+    name: matjip-finder
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/config
+    envVars:
+      - key: KAKAO_REST_API_KEY
+        sync: false # 배포할 때 대시보드에서 입력 (비워둬도 OSM으로 동작)

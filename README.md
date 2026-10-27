@@ -56,3 +56,10 @@ public/app.js      # Leaflet 지도, 검색, 목록 렌더링
 scripts/stitch.js  # Google Stitch API CLI
 design/            # Stitch 결과물 & 스크린샷
 ```
+
+## 무료 배포 (Render)
+1. 이 폴더를 GitHub 저장소에 올립니다 (`.env`는 자동으로 제외됨).
+2. [render.com](https://render.com)에 GitHub로 가입 → **New + → Blueprint** → 저장소 선택.
+3. `KAKAO_REST_API_KEY` 입력(선택) → **Apply**. 몇 분 뒤 `https://matjip-finder-xxxx.onrender.com` 주소가 생깁니다.
+
+무료 플랜은 15분 동안 접속이 없으면 잠들고, 다음 접속 때 깨어나는 데 30초~1분 정도 걸립니다.
