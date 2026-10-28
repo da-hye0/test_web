@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch-path=server.js --watch-path=auth.js --watch-path=store.js --watch-path=.env server.js"
   },
   "engines": {
     "node": ">=18"

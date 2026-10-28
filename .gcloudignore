@@ -1,0 +1,11 @@
+# Cloud Run 소스 배포에서 제외 (키는 환경변수로 넣는다)
+.env
+.env.*
+!.env.example
+.git/
+.github/
+node_modules/
+design/
+scripts/
+*.zip
+data/

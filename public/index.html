@@ -2,92 +2,135 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>근처 맛집·술집 - 할로윈 에디션</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>근처 맛집·술집</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+  <meta name="theme-color" content="#17171c" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/toss/tossface@1.6.1/dist/tossface.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <!-- 디자인: Google Stitch "Spooky Night Out" 디자인 시스템 기반 -->
-  <header class="topbar">
-    <div class="glow glow-a"></div>
-    <div class="glow glow-b"></div>
-    <svg class="cobweb" viewBox="0 0 100 100" aria-hidden="true">
-      <path d="M0,0 Q60,10 100,100M0,0 Q30,40 100,100M0,0 Q10,60 100,100M20,0 Q40,40 0,60M45,0 Q70,45 0,85M70,0 Q90,70 0,100" />
-    </svg>
-
-    <div class="topbar-row">
-      <div class="brand">
-        <span class="brand-logo">🎃<span class="bat float">🦇</span></span>
-        <h1>근처 맛집·술집 <span class="brand-tag">HALLOWEEN NIGHT</span></h1>
+<body class="locked">
+  <!-- 첫 화면: 로그인 -->
+  <section id="gate" class="gate" aria-labelledby="gate-title">
+    <div class="gate-inner">
+      <img class="gate-logo" src="logo.svg" alt="" width="96" height="96" />
+      <h1 id="gate-title">근처 맛집·술집</h1>
+      <p class="gate-sub">지금 있는 곳에서 갈 만한 곳,<br>별점과 후기까지 한눈에.</p>
+      <div class="gate-buttons">
+              <a class="sns kakao" href="/auth/kakao" data-provider="kakao" hidden>
+                <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5C4.6 1.5 1 4.3 1 7.8c0 2.2 1.5 4.2 3.7 5.3l-.9 3.4c-.1.3.3.5.5.3l4-2.7h.7c4.4 0 8-2.8 8-6.3S13.4 1.5 9 1.5z" /></svg>
+                카카오로 시작하기
+              </a>
+              <a class="sns naver" href="/auth/naver" data-provider="naver" hidden>
+                <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M11.4 9.6 6.4 2.5H2.5v13h4.1V8.4l5 7.1h3.9v-13h-4.1z" /></svg>
+                네이버로 시작하기
+              </a>
+              <a class="sns google" href="/auth/google" data-provider="google" hidden>
+                <svg viewBox="0 0 18 18" aria-hidden="true">
+                  <path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.2-.2-1.7H9v3.3h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z" />
+                  <path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.3 0-4.3-1.6-5-3.7H1v2.3A9 9 0 0 0 9 18z" />
+                  <path fill="#FBBC05" d="M4 10.7a5.4 5.4 0 0 1 0-3.4V5H1a9 9 0 0 0 0 8l3-2.3z" />
+                  <path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 1 5l3 2.3c.7-2.1 2.7-3.7 5-3.7z" />
+                </svg>
+                구글로 시작하기
+              </a>
       </div>
-
-      <form id="search-form" class="search" autocomplete="off">
-        <span class="search-icon" aria-hidden="true">🔍</span>
-        <input id="address" type="search" placeholder="주소나 장소명 (예: 강남역, 성수동)" aria-label="주소나 장소명" />
-        <button type="submit" class="btn btn-primary">검색</button>
-        <button type="button" id="locate" class="btn btn-ghost" title="현재 위치 사용">📍 내 위치</button>
-        <ul id="suggestions" class="suggestions" hidden></ul>
-      </form>
-
-      <div class="moon-badge">🌕 오늘 밤 어디 갈까? <span class="bat float-delayed">🦇</span></div>
+      <p id="gate-status" class="gate-status" hidden></p>
     </div>
-
-    <div class="filter-row">
-      <div class="chips" role="tablist" aria-label="카테고리">
-        <button class="chip active" data-type="all" role="tab"><span class="dot"></span>전체</button>
-        <button class="chip" data-type="food" role="tab">🎃 맛집</button>
-        <button class="chip" data-type="bar" role="tab">🦇 술집</button>
-      </div>
-      <label class="radius">
-        <span>탐색 반경</span>
-        <select id="radius">
-          <option value="300">반경 300m</option>
-          <option value="500" selected>반경 500m</option>
-          <option value="1000">반경 1km</option>
-          <option value="2000">반경 2km</option>
-        </select>
-      </label>
-    </div>
-  </header>
+  </section>
 
   <main class="layout">
+    <!-- 모바일: 검색창·필터를 지도 위쪽에 띄운다 (app.js가 PC 목록에서 옮겨 옴) -->
+    <div id="mobile-top" class="mobile-top"></div>
     <aside class="panel">
-      <div class="panel-head">
-        <div id="status" class="status">주소를 입력하거나 <b>📍 내 위치</b>를 눌러주세요.</div>
-        <div id="origin" class="origin" hidden></div>
+      <!-- 목록 오른쪽에 튀어나온 접기/펴기 탭. 접으면 화면 왼쪽 끝에 남는다 -->
+      <!-- 모바일 시트 손잡이 -->
+      <button type="button" class="sheet-handle" aria-label="목록 크기 바꾸기"><i></i></button>
+      <button type="button" id="panel-tab" class="panel-tab" aria-label="목록 닫기" aria-expanded="true">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+      </button>
+      <header class="panel-top">
+        <div class="top-row">
+          <h1 class="wordmark">근처 맛집·술집</h1>
+          <div class="top-right">
+            <div id="account" class="account">
+              <div id="profile" class="profile" hidden>
+                <img id="profile-image" alt="" hidden />
+                <span id="profile-name"></span>
+                <button type="button" id="logout" class="logout">로그아웃</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form id="search-form" class="search" autocomplete="off">
+          <div class="search-field">
+            <input id="address" type="search" placeholder="동네, 역, 주소" aria-label="동네, 역, 주소" />
+            <button type="submit" class="search-submit">검색</button>
+          </div>
+          <button type="button" id="locate" class="locate">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" /><path d="M8 0v3M8 13v3M0 8h3M13 8h3" /></svg>
+            현재 위치에서 찾기
+          </button>
+          <ul id="suggestions" class="suggestions" hidden></ul>
+        </form>
+
+        <div class="filters">
+          <div class="tabs" role="tablist" aria-label="종류">
+            <button class="tab active" data-type="all" role="tab" aria-selected="true">전체 <span id="count-all"></span></button>
+            <button class="tab" data-type="food" role="tab" aria-selected="false">맛집 <span id="count-food"></span></button>
+            <button class="tab" data-type="bar" role="tab" aria-selected="false">술집 <span id="count-bar"></span></button>
+            <button class="tab" data-type="fav" role="tab" aria-selected="false">찜 <span id="count-fav"></span></button>
+          </div>
+          <select id="radius" class="radius" aria-label="반경">
+            <option value="300">300m 안</option>
+            <option value="500" selected>500m 안</option>
+            <option value="1000">1km 안</option>
+            <option value="2000">2km 안</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="panel-meta">
+        <p id="status" class="status">어디 근처에서 찾을지 정해 주세요.</p>
+        <p id="origin" class="origin" hidden></p>
       </div>
+
       <ol id="list" class="list"></ol>
+
       <footer class="panel-foot">
-        <span id="source">데이터: -</span>
-        <span>🕸️ 가까운 순</span>
+        <span id="source"></span>
+        <span>가까운 순</span>
       </footer>
     </aside>
 
     <section class="map-wrap">
       <div id="map" class="map"></div>
-      <div class="map-style" role="group" aria-label="지도 스타일">
-        <button class="active" data-style="dark">🎃 할로윈 다크맵</button>
-        <button data-style="light">일반 지도</button>
+      <div id="route-card" class="route-card" hidden></div>
+      <!-- 로드뷰: 지도(.map)의 다크 필터가 걸리지 않도록 지도 밖에 둔다 -->
+      <div id="roadview-wrap" class="roadview-wrap" hidden>
+        <div id="roadview" class="roadview"></div>
+        <div class="roadview-bar">
+          <span id="roadview-title"></span>
+          <button type="button" id="roadview-close" class="roadview-close" aria-label="로드뷰 닫기">✕</button>
+        </div>
+        <p id="roadview-empty" class="roadview-empty" hidden>이 근처에는 로드뷰가 없어요.</p>
       </div>
-      <div id="legend" class="legend" hidden>
-        <span>🎃 맛집 <b id="count-food">0</b></span>
-        <span>🦇 술집 <b id="count-bar">0</b></span>
-        <span class="legend-me"><i></i>기준 위치</span>
-      </div>
-      <button id="recenter" class="recenter" title="기준 위치로 이동" hidden>◎</button>
-      <div class="deco" aria-hidden="true">
-        <span class="float" style="top:10%;left:30%">🦇</span>
-        <span class="float-delayed" style="top:55%;right:8%;font-size:14px">🦇</span>
-      </div>
+      <button type="button" id="research" class="research" hidden>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 1.5v3h-3" /></svg>
+        이 지역에서 다시 찾기
+      </button>
+      <button id="recenter" class="recenter" title="검색 범위 전체 보기" aria-label="검색 범위 전체 보기" hidden>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4" /></svg>
+      </button>
     </section>
   </main>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="config.js"></script>
+  <script src="map.js"></script>
   <script src="providers.js"></script>
   <script src="app.js"></script>
 </body>

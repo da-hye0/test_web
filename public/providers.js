@@ -39,31 +39,39 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
 // ---------- 1) server.js ----------
 
 async function serverBackend() {
-  const { provider } = await fetchJson('api/config', {}, 3000);
+  const { provider, googleReviews } = await fetchJson('api/config', {}, 3000);
   const qs = (params) => new URLSearchParams(params);
   return {
     provider,
     geocode: async (q) => (await fetchJson(`api/geocode?${qs({ q })}`)).results,
     reverse: async (lat, lng) => (await fetchJson(`api/reverse?${qs({ lat, lng })}`)).address,
-    // 서버가 Overpass 미러를 차례로 시도(각 30초)하므로 넉넉히 기다린다
-    places: async (lat, lng, radius, type) => (await fetchJson(`api/places?${qs({ lat, lng, radius, type })}`, {}, 100000)).places,
+    // 서버가 Overpass 미러를 차례로 시도(각 12초)하므로 넉넉히 기다린다
+    places: async (lat, lng, radius) => (await fetchJson(`api/places?${qs({ lat, lng, radius })}`, {}, 45000)).places,
+    // 네이버 블로그 후기 — 서버에 키가 있어야 해서 서버 백엔드에서만 제공
+    reviews: async (name, address) => fetchJson(`api/reviews?${qs({ name, address: address || '' })}`, {}, 15000),
+    // 구글 별점·리뷰 — 서버에 GOOGLE_PLACES_API_KEY가 있을 때만
+    google: googleReviews
+      ? async (name, address, lat, lng) => (await fetchJson(`api/google?${qs({ name, address: address || '', lat, lng })}`, {}, 15000)).place
+      : null,
+    // 찜 (로그인 사용자별)
+    favorites: {
+      list: async () => (await fetchJson('api/favorites', { cache: 'no-store' })).favorites,
+      add: async (place) => (await fetchJson('api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(place),
+      })).favorite,
+      remove: (id) => fetchJson(`api/favorites?${qs({ id })}`, { method: 'DELETE' }),
+    },
+    // 내 위치 → 가게 경로
+    route: async (from, to) => fetchJson(`api/route?${qs({ fromLat: from.lat, fromLng: from.lng, toLat: to.lat, toLng: to.lng })}`),
   };
 }
 
 // ---------- 2) 카카오 지도 JavaScript SDK ----------
 
-function loadKakaoSdk(appKey) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(appKey)}&libraries=services&autoload=false`;
-    script.onload = () => window.kakao.maps.load(resolve);
-    script.onerror = () => reject(new Error('카카오 지도 SDK를 불러오지 못했습니다. 키와 등록된 도메인을 확인하세요.'));
-    document.head.appendChild(script);
-  });
-}
-
 async function kakaoBackend(appKey) {
-  await loadKakaoSdk(appKey);
+  await loadKakaoSdk(appKey); // map.js
   const { services, LatLng } = window.kakao.maps;
   const geocoder = new services.Geocoder();
   const ps = new services.Places();
@@ -110,11 +118,12 @@ async function kakaoBackend(appKey) {
       return d ? (d.road_address?.address_name || d.address?.address_name) : null;
     },
 
-    async places(lat, lng, radius, type) {
+    async places(lat, lng, radius) {
       const options = { location: new LatLng(lat, lng), radius, sort: services.SortBy.DISTANCE, size: 15 };
-      const jobs = [];
-      if (type !== 'bar') jobs.push(allPages(ps.categorySearch.bind(ps), 'FD6', options));
-      if (type !== 'food') jobs.push(allPages(ps.keywordSearch.bind(ps), '술집', options));
+      const jobs = [
+        allPages(ps.categorySearch.bind(ps), 'FD6', options),
+        allPages(ps.keywordSearch.bind(ps), '술집', options),
+      ];
 
       const seen = new Set();
       const places = [];
@@ -122,8 +131,8 @@ async function kakaoBackend(appKey) {
         if (seen.has(d.id)) continue;
         seen.add(d.id);
         const categoryPath = d.category_name || '';
+        if (categoryPath.includes('구내식당')) continue; // 일반 손님이 못 가는 곳
         const kind = categoryPath.includes('술집') ? 'bar' : 'food'; // 예: 음식점 > 술집 > 호프,요리주점
-        if (type !== 'all' && kind !== type) continue;
         places.push({
           id: `kakao-${d.id}`,
           name: d.place_name,
@@ -145,6 +154,7 @@ async function kakaoBackend(appKey) {
 // ---------- 3) OpenStreetMap (브라우저 직접 호출) ----------
 
 function osmBackend() {
+  let mirrorIndex = 0; // 마지막으로 응답한 미러부터 시도
   return {
     provider: 'osm',
 
@@ -160,15 +170,17 @@ function osmBackend() {
       return data.display_name || null;
     },
 
-    async places(lat, lng, radius, type) {
-      const amenities = type === 'food' ? OSM_FOOD : type === 'bar' ? OSM_BAR : [...OSM_FOOD, ...OSM_BAR];
+    async places(lat, lng, radius) {
+      const amenities = [...OSM_FOOD, ...OSM_BAR];
       const query = `[out:json][timeout:25];nwr["amenity"~"^(${amenities.join('|')})$"](around:${radius},${lat},${lng});out center tags 200;`;
 
       let data;
       let lastError;
-      for (const mirror of OVERPASS_MIRRORS) {
+      for (let i = 0; i < OVERPASS_MIRRORS.length; i++) {
+        const index = (mirrorIndex + i) % OVERPASS_MIRRORS.length;
         try {
-          data = await fetchJson(mirror, { method: 'POST', body: new URLSearchParams({ data: query }) }, 30000);
+          data = await fetchJson(OVERPASS_MIRRORS[index], { method: 'POST', body: new URLSearchParams({ data: query }) }, 12000);
+          mirrorIndex = index;
           break;
         } catch (e) {
           lastError = e;
@@ -217,10 +229,22 @@ async function createBackend() {
       return osmBackend();
     }) : osmBackend();
   }
+  // 좌표는 소수점 4자리(약 10m)로 맞춰서 캐시 적중률을 높인다
+  const round = (n) => Number(n.toFixed(4));
+  const reverse = memoize(backend.reverse);
+  const allPlaces = memoize(backend.places);
   return {
     provider: backend.provider,
     geocode: memoize(backend.geocode),
-    reverse: memoize(backend.reverse),
-    places: memoize(backend.places),
+    reviews: backend.reviews ? memoize(backend.reviews) : null,
+    google: backend.google ? memoize(backend.google) : null,
+    favorites: backend.favorites || null,
+    route: backend.route || null,
+    reverse: (lat, lng) => reverse(round(lat), round(lng)),
+    // 맛집/술집은 한 번에 받아두고 종류 필터는 여기서 → 탭을 바꿔도 다시 요청하지 않는다
+    places: async (lat, lng, radius, type = 'all') => {
+      const all = await allPlaces(round(lat), round(lng), radius);
+      return type === 'all' ? all : all.filter((p) => p.kind === type);
+    },
   };
 }
