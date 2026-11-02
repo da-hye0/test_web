@@ -35,6 +35,9 @@ Gemini가 카카오 장소 검색과 블로그 후기를 직접 찾아보고 3~5
 - [반찬](https://unsplash.com/photos/a-table-topped-with-bowls-filled-with-food-78jWkCp_jdM)
 - [밤 고깃집 골목](https://unsplash.com/photos/nighttime-street-food-stall-with-korean-signs-psD8HRs1AHQ)
 
+## 아이콘
+`public/icons.js`의 아이콘은 [Lucide](https://lucide.dev) (ISC 라이선스) SVG를 그대로 옮긴 것입니다.
+
 ## 데이터 소스
 | 상황 | 사용 API | 비고 |
 |---|---|---|

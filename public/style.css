@@ -38,6 +38,7 @@ html, body {
 }
 
 button, input, select, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+.ic { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 button { cursor: pointer; }
 a { color: inherit; }
 .panel svg, .mobile-top svg, .recenter svg, .research svg { fill: none; stroke: currentColor; stroke-width: 1.8; }
@@ -115,11 +116,15 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 }
 
 .wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   letter-spacing: -0.04em;
 }
+.wordmark img { width: 30px; height: 30px; border-radius: 9px; }
 
 /* ---------- 계정 ---------- */
 
@@ -180,19 +185,23 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
   font-size: 14px;
   font-weight: 600;
 }
-.profile img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.profile img, .avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.avatar { display: grid; place-items: center; background: var(--blue-soft); color: var(--blue-text); font-size: 13px; font-weight: 700; }
 .profile span { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .logout {
-  padding: 5px 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   border: 0;
-  border-radius: 8px;
-  background: var(--surface-2);
-  color: var(--text-2);
-  font-size: 12.5px;
-  font-weight: 500;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-3);
+  font-size: 17px;
 }
-.logout:hover { color: var(--text); }
+.logout:hover { background: var(--surface-2); color: var(--text); }
 
 /* ---------- 검색 ---------- */
 
@@ -364,8 +373,9 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--c) 18%, transparent);
-  font: 20px/1 var(--emoji);
+  background: color-mix(in srgb, var(--c) 15%, transparent);
+  color: var(--c);
+  font-size: 20px;
 }
 
 .row-body { min-width: 0; }
@@ -470,6 +480,8 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 
 /* 선택한 가게의 길찾기·로드뷰 버튼 */
 .row-actions { display: flex; gap: 8px; padding-top: 14px; }
+.route-btn, .roadview-btn, .act-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.route-btn .ic, .roadview-btn .ic, .act-btn .ic { font-size: 18px; }
 .route-btn {
   flex: 1;
   height: 46px;
@@ -497,6 +509,19 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 }
 .roadview-btn:hover { background: var(--surface-3); }
 .roadview-btn:active { transform: scale(.97); }
+/* 전화·카카오맵: 아이콘만 있는 정사각 버튼 */
+.act-btn {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform .15s var(--ease), background-color .2s;
+}
+.act-btn:hover { background: var(--surface-3); }
+.act-btn:active { transform: scale(.95); }
 .rv-content:not(:empty) { padding-top: 16px; }
 
 .collapse-btn {
@@ -590,17 +615,22 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 .rv-more:hover { color: var(--text-2); }
 
 /* ---------- 지도 ---------- */
-/* 카카오맵·OSM 모두 밝은 지도뿐이라, 지도 전체를 반전 + 색상 회전해서 다크로 보이게 한다.
-   핀·말풍선은 같은 필터를 한 번 더 걸어 원래 색으로 되돌린다. */
+/* 카카오맵은 밝은 지도뿐이라, 지도 전체를 반전 + 색상 회전해서 다크로 보이게 한다.
+   핀·말풍선은 같은 필터를 한 번 더 걸어 원래 색으로 되돌린다.
+   Leaflet은 지도 그림(타일)에만 필터를 걸고, 색을 빼서 잔 아이콘이 덜 튀게 한다. */
 
 .map-wrap { position: absolute; inset: 0; background: var(--bg); }
 .map { position: absolute; inset: 0; background: #1b1d22; }
-.map.kakao, .map.osm { filter: invert(1) hue-rotate(180deg); }
-.map .pin, .map .me-pin, .map .map-info, .map .leaflet-popup {
+.map.kakao { filter: invert(1) hue-rotate(180deg); }
+.map.osm .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) grayscale(.7) brightness(.82) contrast(.92); }
+.map.kakao .pin, .map.kakao .me-pin, .map.kakao .map-info {
   filter: invert(1) hue-rotate(180deg);
 }
 
-.leaflet-container { font-family: var(--font); background: #e4e2dd; }
+.leaflet-container { font-family: var(--font); background: #0f0f11; }
+.leaflet-control-attribution { background: rgba(23, 23, 28, .7) !important; color: var(--text-3) !important; }
+.leaflet-control-attribution a { color: var(--text-2) !important; }
+.leaflet-bar a { background: var(--surface) !important; color: var(--text) !important; border-color: var(--surface-2) !important; }
 .leaflet-control-attribution { font-size: 10px; }
 
 /* 말풍선 핀 — 종류 아이콘, 꼬리 끝이 가게 위치. --c(종류 색)는 JS가 지정 */
@@ -617,21 +647,24 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 .pin-body {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  background: var(--surface);
-  font: 18px/1 var(--emoji);
-  box-shadow: inset 0 0 0 2px var(--c), 0 4px 12px rgba(0, 0, 0, .45);
-  transition: background-color .2s, box-shadow .2s;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1e1e24;
+  color: var(--c);
+  font-size: 15px;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--c) 70%, transparent), 0 4px 12px rgba(0, 0, 0, .5);
+  transition: background-color .2s, box-shadow .2s, color .2s;
 }
+.pin-body .ic { stroke-width: 2; }
 .pin::after {
   content: "";
-  margin-top: -1px;
-  border: 5px solid transparent;
-  border-bottom: 0;
-  border-top: 6px solid var(--c);
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .25));
+  width: 5px;
+  height: 5px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 0 2px #1e1e24;
 }
 
 .pin-label {
@@ -669,7 +702,8 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
   border: 0;
   border-radius: 8px;
   background: var(--blue);
-  font: 15px/1 var(--emoji);
+  color: #fff;
+  font-size: 14px;
   cursor: pointer;
   transition: transform .15s var(--ease), background-color .2s;
 }
@@ -678,10 +712,11 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 .pin.active .pin-go { display: grid; }
 .pin-go:hover { background: #1b64da; }
 
-.pin.active { transform: scale(1.2) translateY(-2px); }
+.pin.active { transform: scale(1.25) translateY(-2px); }
 .pin.active .pin-body {
   background: var(--c);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9), 0 6px 18px rgba(0, 0, 0, .5);
+  color: #141418;
+  box-shadow: 0 0 0 2.5px #fff, 0 8px 20px rgba(0, 0, 0, .55);
 }
 
 /* Leaflet은 크기 0인 아이콘 기준점에 핀을 붙인다 */
@@ -795,7 +830,7 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 
 .ai-open {
   position: absolute;
-  right: 16px;
+  right: 60px;
   bottom: 20px;
   z-index: 700;
   display: inline-flex;
@@ -920,6 +955,8 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
 }
 .ai-examples button:hover, .ai-place:hover { background: #4a4a56; }
 .ai-place.all { background: var(--blue-soft); color: var(--blue-text); font-weight: 600; }
+.ai-place { display: inline-flex; align-items: center; gap: 6px; }
+.ai-place .ic { font-size: 15px; color: var(--c, var(--text-2)); }
 
 .ai-form {
   display: flex;
@@ -1040,7 +1077,7 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
   border-radius: 14px;
   background: var(--surface-2);
 }
-.route-emoji { font: 20px/1 var(--emoji); }
+.route-emoji { font-size: 22px; color: var(--blue-text); }
 .route-modes b { margin-top: 6px; font-size: 17px; }
 .route-modes small { color: var(--text-3); font-size: 12px; }
 .route-note { margin: 12px 0 0; color: var(--text-3); font-size: 12.5px; }
@@ -1082,16 +1119,12 @@ body.locked .gate {
   position: fixed;
   inset: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(400px, 1fr);
+  grid-template-columns: minmax(0, 1fr) 480px;
   background: var(--bg);
 }
 
-/* 사진 무대 — 천천히 바뀌며 아주 살짝 다가오는 사진 (켄 번즈) */
-.gate-stage {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
+/* 사진: 천천히 바뀌기만 한다 */
+.gate-photos { position: relative; overflow: hidden; background: #0d0d0f; }
 .gate-photos img {
   position: absolute;
   inset: 0;
@@ -1099,98 +1132,51 @@ body.locked .gate {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transform: scale(1.06);
-  transition: opacity 1.6s ease, transform 9s linear;
+  transition: opacity 1.4s ease;
 }
-.gate-photos img.on { opacity: 1; transform: scale(1); }
-.gate-stage::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(to top, rgba(12, 12, 15, .92) 0%, rgba(12, 12, 15, .35) 38%, rgba(12, 12, 15, .05) 62%),
-    linear-gradient(to right, rgba(12, 12, 15, 0) 70%, rgba(23, 23, 28, .9) 100%);
-}
+.gate-photos img.on { opacity: 1; }
 
-.gate-copy {
-  position: absolute;
-  left: clamp(28px, 5vw, 64px);
-  right: 28px;
-  bottom: clamp(32px, 7vh, 72px);
-  z-index: 1;
-  animation: rise .7s var(--ease) .1s backwards;
-}
-.gate-kicker {
-  margin: 0 0 12px;
-  color: rgba(255, 255, 255, .72);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-.gate-headline {
-  margin: 0;
-  color: #fff;
-  font-size: clamp(34px, 4.4vw, 56px);
-  font-weight: 800;
-  line-height: 1.18;
-  letter-spacing: -0.045em;
-  text-wrap: balance;
-}
-
-/* 로그인 패널 */
 .gate-panel {
   display: grid;
-  place-items: center;
-  padding: 48px clamp(28px, 4vw, 56px);
+  grid-template-rows: auto 1fr auto;
+  padding: 32px 56px 28px;
   overflow-y: auto;
 }
-.gate-inner { width: min(360px, 100%); animation: rise .6s var(--ease); }
-.gate-logo {
-  display: block;
-  width: 56px;
-  height: 56px;
-  margin: 0 0 22px;
-  border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(49, 130, 246, .3);
+.gate-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
-.gate h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.045em; }
-.gate-sub { margin: 10px 0 26px; color: var(--text-2); font-size: 16px; line-height: 1.6; }
-
-.gate-points { display: grid; gap: 12px; margin: 0 0 32px; padding: 0; list-style: none; }
-.gate-points li { display: flex; align-items: center; gap: 12px; color: var(--text-2); font-size: 14.5px; }
-.gate-points svg {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  padding: 8px;
-  border-radius: 11px;
-  background: var(--surface-2);
-  fill: none;
-  stroke: var(--blue-text);
-  stroke-width: 1.7;
-  stroke-linejoin: round;
-}
+.gate-brand img { border-radius: 8px; }
+.gate-inner { align-self: center; width: 100%; max-width: 340px; padding: 40px 0; }
+.gate h1 { margin: 0; font-size: 30px; font-weight: 700; line-height: 1.35; letter-spacing: -0.04em; }
+.gate-sub { margin: 12px 0 32px; color: var(--text-2); font-size: 15px; line-height: 1.6; word-break: keep-all; }
 
 /* 각 회사 로그인 버튼 가이드의 색 (카카오 노랑, 네이버 초록, 구글 흰색) */
-.gate-buttons { display: grid; gap: 10px; }
+.gate-buttons { display: grid; gap: 8px; }
 .gate-buttons .sns {
   position: relative;
-  height: 52px;
+  height: 44px;
   margin: 0;
-  border-radius: 14px;
-  font-size: 15.5px;
-  font-weight: 650;
-  transition: transform .15s var(--ease), filter .2s, box-shadow .2s;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: filter .2s;
 }
-.gate-buttons .sns svg { position: absolute; left: 20px; width: 20px; height: 20px; }
-.gate-buttons .sns:hover { filter: brightness(.95); box-shadow: 0 8px 22px rgba(0, 0, 0, .3); }
-.gate-buttons .sns.kakao { background: #fee500; color: rgba(0, 0, 0, .88); }
-.gate-buttons .sns.kakao svg { color: #191919; }
+.gate-buttons .sns svg { position: absolute; left: 16px; width: 18px; height: 18px; }
+.gate-buttons .sns:hover { filter: brightness(.96); }
+.gate-buttons .sns:active { transform: none; filter: brightness(.92); }
+.gate-buttons .sns.kakao { background: #fee500; color: rgba(0, 0, 0, .85); }
+.gate-buttons .sns.kakao svg { color: #000; }
 .gate-buttons .sns.naver { background: #03c75a; color: #fff; }
-.gate-buttons .sns.naver svg { color: #fff; width: 16px; height: 16px; left: 22px; }
-.gate-buttons .sns.google { background: #fff; color: #1f1f1f; }
+.gate-buttons .sns.naver svg { color: #fff; width: 13px; height: 13px; left: 18.5px; }
+.gate-buttons .sns.google { background: #fff; color: #1f1f1f; box-shadow: inset 0 0 0 1px #dadce0; }
 .gate-status { margin: 16px 0 0; color: var(--error); font-size: 14px; }
-.gate-note { margin: 18px 0 0; color: var(--text-3); font-size: 13px; text-align: center; }
+.gate-note { margin: 16px 0 0; color: var(--text-3); font-size: 13px; }
+.gate-foot { margin: 0; color: var(--text-3); font-size: 12px; }
 
 /* ---------- 모바일 ---------- */
 
@@ -1330,19 +1316,12 @@ body.locked .gate {
   .pin-label { font-size: 12px; }
 
   /* 로그인 화면 */
-  body.locked .gate { display: block; overflow-y: auto; }
-  .gate-stage { height: 46dvh; }
-  .gate-stage::after { background: linear-gradient(to top, var(--bg) 0%, rgba(23, 23, 28, .55) 35%, rgba(12, 12, 15, .1) 70%); }
-  .gate-copy { left: 20px; bottom: 18px; }
-  .gate-kicker { margin-bottom: 8px; font-size: 13px; }
-  .gate-headline { font-size: 32px; }
-  .gate-panel { display: block; padding: 8px 20px calc(28px + env(safe-area-inset-bottom)); overflow: visible; }
-  .gate-inner { width: 100%; }
-  .gate-logo, .gate h1 { display: none; }
-  .gate-sub { margin: 4px 0 20px; font-size: 15px; }
-  .gate-points { gap: 10px; margin-bottom: 24px; }
-  .gate-points li { font-size: 14px; }
-  .gate-points svg { width: 30px; height: 30px; padding: 7px; }
+  body.locked .gate { display: flex; flex-direction: column; overflow-y: auto; }
+  .gate-photos { flex: none; height: 38dvh; }
+  .gate-panel { flex: 1; padding: 24px 20px calc(20px + env(safe-area-inset-bottom)); overflow: visible; }
+  .gate-inner { align-self: start; max-width: none; padding: 28px 0 24px; }
+  .gate h1 { font-size: 26px; }
+  .gate-sub { margin-bottom: 28px; font-size: 15px; }
 }
 }
 

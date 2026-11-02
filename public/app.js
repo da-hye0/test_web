@@ -349,11 +349,11 @@ function render(map) {
   }
 
   list.innerHTML = places.map((p, i) => {
-    const { emoji, color } = placeStyle(p);
+    const { svg, color } = placeStyle(p);
     const faved = state.favIds.has(p.id);
     return `
       <li class="row" data-id="${escapeHtml(p.id)}">
-        <span class="icon" style="--c:${color}">${emoji}</span>
+        <span class="icon" style="--c:${color}">${svg}</span>
         <div class="row-body">
           <h3 class="name">${escapeHtml(p.name)}</h3>
           ${p.category ? `<div class="category">${escapeHtml(p.category.replace(/ > /g, ' · '))}</div>` : ''}
@@ -370,7 +370,9 @@ function render(map) {
           <div class="rv-inner">
             <div class="row-actions">
               <button type="button" class="route-btn${state.routeTo === p.id ? ' on' : ''}" data-action="route">${routeLabel(p.id)}</button>
-              ${hasRoadview ? '<button type="button" class="roadview-btn" data-action="roadview">🛣️ 로드뷰</button>' : ''}
+              ${hasRoadview ? `<button type="button" class="roadview-btn" data-action="roadview">${icon('roadview')}로드뷰</button>` : ''}
+              ${p.phone ? `<a class="act-btn" href="tel:${escapeHtml(p.phone.replace(/[^0-9+]/g, ''))}" aria-label="전화 걸기" title="전화 걸기">${icon('phone')}</a>` : ''}
+              ${p.url ? `<a class="act-btn" href="${escapeHtml(p.url)}" target="_blank" rel="noopener" aria-label="카카오맵에서 보기" title="카카오맵에서 보기">${icon('external')}</a>` : ''}
             </div>
             <div class="rv-content"></div>
             <button type="button" class="collapse-btn" data-action="collapse">접기</button>
@@ -621,13 +623,13 @@ function showRouteCard(html) {
   routeCard.hidden = false;
 }
 
-const routeLabel = (id) => (state.routeTo === id ? '🧭 경로 보는 중' : '🧭 길찾기');
+const routeLabel = (id) => `${icon('navigate')}${state.routeTo === id ? '경로 보는 중' : '길찾기'}`;
 
 function updateRouteButtons() {
   document.querySelectorAll('.route-btn').forEach((btn) => {
     const id = btn.closest('.row').dataset.id;
     btn.classList.toggle('on', state.routeTo === id);
-    btn.textContent = routeLabel(id);
+    btn.innerHTML = routeLabel(id);
   });
 }
 
@@ -680,9 +682,9 @@ async function showRoute(place) {
     showRouteCard(`
       <p class="route-title">${escapeHtml(place.name)}까지 <span>${formatDistance(r.distance)}</span></p>
       <div class="route-modes">
-        <div><span class="route-emoji">🚶</span><b>${r.walkMin}분</b><small>도보 (예상)</small></div>
-        <div><span class="route-emoji">🚗</span><b>${r.driveMin}분</b><small>자동차</small></div>
-        ${r.taxi ? `<div><span class="route-emoji">🚕</span><b>${r.taxi.toLocaleString()}원</b><small>택시 예상</small></div>` : ''}
+        <div><span class="route-emoji">${icon('walk')}</span><b>${r.walkMin}분</b><small>도보 (예상)</small></div>
+        <div><span class="route-emoji">${icon('car')}</span><b>${r.driveMin}분</b><small>자동차</small></div>
+        ${r.taxi ? `<div><span class="route-emoji">${icon('taxi')}</span><b>${r.taxi.toLocaleString()}원</b><small>택시 예상</small></div>` : ''}
       </div>
       <p class="route-note">${escapeHtml(fromLabel)}에서 출발 · 지도 선은 자동차 경로예요</p>
       <a class="route-open" href="${escapeHtml(kakaoNavi)}" target="_blank" rel="noopener">카카오맵에서 안내 받기</a>`);
@@ -831,7 +833,10 @@ function placeChips(places) {
   if (!places.length) return '';
   return `
     <div class="ai-places">
-      ${places.map((p) => `<button type="button" class="ai-place" data-id="${escapeHtml(p.id)}">${placeStyle(p).emoji} ${escapeHtml(p.name)}</button>`).join('')}
+      ${places.map((p) => {
+        const { svg, color } = placeStyle(p);
+        return `<button type="button" class="ai-place" data-id="${escapeHtml(p.id)}" style="--c:${color}">${svg}${escapeHtml(p.name)}</button>`;
+      }).join('')}
       <button type="button" class="ai-place all" data-all>지도에서 모두 보기</button>
     </div>`;
 }
@@ -940,6 +945,10 @@ function renderAccount(user) {
   const img = $('#profile-image');
   img.hidden = !user.image;
   if (user.image) img.src = user.image;
+  // 프로필 사진이 없으면 이름 첫 글자
+  const avatar = $('#profile-avatar');
+  avatar.hidden = Boolean(user.image);
+  avatar.textContent = (user.name || '?').trim().charAt(0).toUpperCase();
 }
 
 // 서버(app/main.py)가 없으면(GitHub Pages) 로그인 없이 바로 쓴다

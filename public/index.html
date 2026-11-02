@@ -9,47 +9,24 @@
   <meta name="theme-color" content="#17171c" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/toss/tossface@1.6.1/dist/tossface.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="locked">
   <!-- 첫 화면: 로그인 -->
   <section id="gate" class="gate" aria-labelledby="gate-title">
-    <!-- 왼쪽(모바일: 위쪽) 사진 무대. 사진은 Unsplash 라이선스 (README 참고) -->
-    <div class="gate-stage" aria-hidden="true">
-      <div class="gate-photos">
-        <img src="img/login-grill.jpg" alt="" class="on" />
-        <img src="img/login-table.jpg" alt="" loading="lazy" />
-        <img src="img/login-stall.jpg" alt="" loading="lazy" />
-      </div>
-
-      <div class="gate-copy">
-        <p class="gate-kicker">서울 어디서든, 지금 이 근처</p>
-        <p class="gate-headline">오늘 어디 갈지,<br />고민은 여기까지.</p>
-      </div>
+    <!-- 사진은 Unsplash 라이선스 (README 참고) -->
+    <div class="gate-photos" aria-hidden="true">
+      <img src="img/login-grill.jpg" alt="" class="on" />
+      <img src="img/login-table.jpg" alt="" loading="lazy" />
+      <img src="img/login-stall.jpg" alt="" loading="lazy" />
     </div>
 
-    <!-- 오른쪽(모바일: 아래쪽) 로그인 -->
     <div class="gate-panel">
-      <div class="gate-inner">
-        <img class="gate-logo" src="logo.svg" alt="" width="56" height="56" />
-        <h1 id="gate-title">근처 맛집·술집</h1>
-        <p class="gate-sub">지금 있는 곳 주변의 맛집과 술집을<br />별점·후기와 함께, AI 추천까지.</p>
+      <div class="gate-brand"><img src="logo.svg" alt="" width="28" height="28" />근처 맛집·술집</div>
 
-        <ul class="gate-points">
-          <li>
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.2 6-10A6 6 0 0 0 4 8c0 4.8 6 10 6 10z" /><circle cx="10" cy="8" r="2.2" /></svg>
-            내 위치 반경 300m~2km 맛집·술집
-          </li>
-          <li>
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2.5 2.3 4.8 5.2.6-3.8 3.6 1 5.2L10 14.2l-4.7 2.5 1-5.2-3.8-3.6 5.2-.6z" /></svg>
-            구글 별점과 블로그 후기를 한 번에
-          </li>
-          <li>
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 11.6 7.9 17.5 9.5 11.6 11.1 10 17 8.4 11.1 2.5 9.5 8.4 7.9z" /></svg>
-            모임 장소 고민은 AI에게 물어보기
-          </li>
-        </ul>
+      <div class="gate-inner">
+        <h1 id="gate-title">오늘 갈 곳,<br />가까운 데서 찾아요</h1>
+        <p class="gate-sub">지금 있는 곳 주변 맛집과 술집을 지도에서 바로 볼 수 있어요.</p>
 
         <div class="gate-buttons">
           <a class="sns kakao" href="/auth/kakao" data-provider="kakao" hidden>
@@ -71,8 +48,10 @@
           </a>
         </div>
         <p id="gate-status" class="gate-status" role="alert" hidden></p>
-        <p class="gate-note">처음이면 바로 가입돼요. 별도로 입력할 정보는 없어요.</p>
+        <p class="gate-note">로그인하면 찜한 가게가 저장돼요.</p>
       </div>
+
+      <p class="gate-foot">© 2026 근처 맛집·술집</p>
     </div>
   </section>
 
@@ -88,13 +67,16 @@
       </button>
       <header class="panel-top">
         <div class="top-row">
-          <h1 class="wordmark">근처 맛집·술집</h1>
+          <h1 class="wordmark"><img src="logo.svg" alt="" />근처 맛집·술집</h1>
           <div class="top-right">
             <div id="account" class="account">
               <div id="profile" class="profile" hidden>
                 <img id="profile-image" alt="" hidden />
+                <span id="profile-avatar" class="avatar" aria-hidden="true" hidden></span>
                 <span id="profile-name"></span>
-                <button type="button" id="logout" class="logout">로그아웃</button>
+                <button type="button" id="logout" class="logout" aria-label="로그아웃" title="로그아웃">
+                  <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10" /></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -191,6 +173,7 @@
   </main>
 
   <script src="config.js"></script>
+  <script src="icons.js"></script>
   <script src="map.js"></script>
   <script src="providers.js"></script>
   <script src="app.js"></script>

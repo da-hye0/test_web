@@ -53,38 +53,38 @@ function loadKakaoSdk(appKey) {
   return kakaoSdkPromise;
 }
 
-// 가게 종류별 아이콘(토스페이스 이모지)과 색 — 카카오 카테고리 경로("술집 > 와인바")를 보고 위에서부터 첫 번째로 맞는 것
+// 가게 종류별 아이콘(icons.js)과 색 — 카카오 카테고리 경로("술집 > 와인바")를 보고 위에서부터 첫 번째로 맞는 것
 const PLACE_STYLES = [
   // 술집
-  [/와인/, '🍷', '#b06cf5'],
-  [/칵테일|> 바$|> 바,/, '🍸', '#ec5c9b'],
-  [/이자카야|일본식주점|사케/, '🏮', '#f0564a'],
-  [/전통주|막걸리|민속주점/, '🍶', '#c9905a'],
-  [/포장마차|포차|오뎅/, '🍢', '#f08a3c'],
-  [/호프|맥주|비어|펍|pub|biergarten/, '🍺', '#f2a922'],
-  [/술집|^bar/, '🍻', '#3182f6'],
+  [/와인/, 'wine', '#b993f5'],
+  [/칵테일|> 바$|> 바,/, 'cocktail', '#ef86b4'],
+  [/이자카야|일본식주점|사케/, 'lantern', '#f2806f'],
+  [/전통주|막걸리|민속주점/, 'bottle', '#d5a873'],
+  [/포장마차|포차|오뎅/, 'bottle', '#f29e62'],
+  [/호프|맥주|비어|펍|pub|biergarten/, 'beer', '#f3b941'],
+  [/술집|^bar/, 'cheers', '#73abff'],
   // 음식
-  [/치킨|닭강정/, '🍗', '#f2a922'],
-  [/피자|pizza/, '🍕', '#f08a3c'],
-  [/햄버거|패스트푸드|fast_food|burger/, '🍔', '#e8a33a'],
-  [/분식|떡볶이|김밥/, '🍙', '#f5c242'],
-  [/육류|고기|삼겹|갈비|곱창|막창|족발|보쌈|bbq/, '🥩', '#f0564a'],
-  [/> 회|횟집|해물|해산물|생선|조개|대게|장어|seafood/, '🦐', '#33b6e8'],
-  [/초밥|스시|일식|돈까스|돈가스|우동|japanese|sushi/, '🍣', '#2bbfa4'],
-  [/라멘|라면|국수|냉면|칼국수|noodle|ramen/, '🍜', '#e8c33a'],
-  [/중식|중국|chinese/, '🥟', '#e5484d'],
-  [/양식|이탈리|파스타|스테이크|italian|western|french/, '🍝', '#4cc38a'],
-  [/베트남|태국|인도|아시아|멕시|vietnamese|thai|indian|asian|mexican/, '🍛', '#9bd14b'],
-  [/제과|베이커리|디저트|간식|도넛|bakery|dessert/, '🥐', '#d4a373'],
-  [/샐러드|샌드위치|salad|sandwich/, '🥗', '#5ec26a'],
-  [/한식|찌개|국밥|해장국|탕|백반|korean/, '🍲', '#ff7a45'],
+  [/치킨|닭강정/, 'chicken', '#f3b941'],
+  [/피자|pizza/, 'pizza', '#f29e62'],
+  [/햄버거|패스트푸드|fast_food|burger/, 'burger', '#e9aa45'],
+  [/분식|떡볶이|김밥/, 'snack', '#f4c95f'],
+  [/육류|고기|삼겹|갈비|곱창|막창|족발|보쌈|bbq/, 'meat', '#f2806f'],
+  [/> 회|횟집|해물|해산물|생선|조개|대게|장어|seafood/, 'fish', '#62c6ee'],
+  [/초밥|스시|일식|돈까스|돈가스|우동|japanese|sushi/, 'sushi', '#4ccbb1'],
+  [/라멘|라면|국수|냉면|칼국수|noodle|ramen/, 'noodle', '#e9c962'],
+  [/중식|중국|chinese/, 'dumpling', '#ef7073'],
+  [/양식|이탈리|파스타|스테이크|italian|western|french/, 'utensils', '#62d09a'],
+  [/베트남|태국|인도|아시아|멕시|vietnamese|thai|indian|asian|mexican/, 'curry', '#acd865'],
+  [/제과|베이커리|디저트|간식|도넛|bakery|dessert/, 'bread', '#dbb185'],
+  [/샐러드|샌드위치|salad|sandwich/, 'leaf', '#74d180'],
+  [/한식|찌개|국밥|해장국|탕|백반|korean/, 'bowl', '#ff9566'],
 ];
 
 function placeStyle(place) {
   const text = `${place.kind === 'bar' ? '술집 ' : ''}${place.category || ''}`;
   const hit = PLACE_STYLES.find(([re]) => re.test(text));
-  if (hit) return { emoji: hit[1], color: hit[2] };
-  return place.kind === 'bar' ? { emoji: '🍻', color: '#3182f6' } : { emoji: '🍽️', color: '#8b95a1' };
+  const [glyph, color] = hit ? [hit[1], hit[2]] : place.kind === 'bar' ? ['cheers', '#73abff'] : ['utensils', '#a3adb9'];
+  return { glyph, color, svg: icon(glyph) };
 }
 
 // ---------- 경로 그리기 애니메이션 ----------
@@ -133,13 +133,12 @@ function meElement() {
 
 // 말풍선 모양 핀: 종류 아이콘 + 아래 꼬리, 마우스를 올리거나 선택하면 가게 이름 라벨이 나온다
 function placeElement(place) {
-  const { emoji, color } = placeStyle(place);
+  const { svg, color } = placeStyle(place);
   const el = document.createElement('div');
   el.className = 'pin';
   el.style.setProperty('--c', color);
-  el.innerHTML = `<span class="pin-body"></span>
-    <span class="pin-label"><span class="pin-name"></span><button type="button" class="pin-go" aria-label="길찾기" title="길찾기">🚶</button></span>`;
-  el.querySelector('.pin-body').textContent = emoji;
+  el.innerHTML = `<span class="pin-body">${svg}</span>
+    <span class="pin-label"><span class="pin-name"></span><button type="button" class="pin-go" aria-label="길찾기" title="길찾기">${icon('navigate')}</button></span>`;
   el.querySelector('.pin-name').textContent = place.name;
   return el;
 }
@@ -378,7 +377,7 @@ async function leafletMap(el, inset) {
 
   const map = L.map(el, { zoomControl: false }).setView(DEFAULT_CENTER, 14);
   if (!matchMedia('(max-width: 760px)').matches) L.control.zoom({ position: 'bottomright' }).addTo(map);
-  // 키 없이 쓸 수 있는 OSM 기본 타일. 색은 CSS(.map.osm .leaflet-tile-pane)에서 차분하게 눌러준다
+  // 키 없이 쓸 수 있는 OSM 기본 타일. 지도 그림(타일)만 CSS로 어둡고 차분하게 바꾸고, 핀·경로는 원래 색 그대로
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
