@@ -1,8 +1,8 @@
 // 데이터 백엔드 선택
-// 1) server.js 가 떠 있으면 서버 API 사용 (npm start)
+// 1) 파이썬 서버(app/main.py)가 떠 있으면 서버 API 사용
 // 2) 서버가 없고(GitHub Pages 등) config.js 에 카카오 JavaScript 키가 있으면 카카오 지도 SDK 사용
 // 3) 둘 다 아니면 브라우저에서 OpenStreetMap 직접 호출
-// 반환 형태는 server.js 의 /api/* 응답과 동일하다.
+// 반환 형태는 서버의 /api/* 응답과 동일하다.
 
 const OVERPASS_MIRRORS = [
   'https://overpass-api.de/api/interpreter',
@@ -36,7 +36,7 @@ function distanceMeters(lat1, lng1, lat2, lng2) {
   return Math.round(2 * 6371000 * Math.asin(Math.sqrt(a)));
 }
 
-// ---------- 1) server.js ----------
+// ---------- 1) 파이썬 서버 ----------
 
 async function serverBackend() {
   const { provider, googleReviews } = await fetchJson('api/config', {}, 3000);

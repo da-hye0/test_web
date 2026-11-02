@@ -5,6 +5,8 @@
 .git/
 .github/
 node_modules/
+.venv/
+__pycache__/
 design/
 scripts/
 *.zip

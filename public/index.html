@@ -15,30 +15,64 @@
 <body class="locked">
   <!-- 첫 화면: 로그인 -->
   <section id="gate" class="gate" aria-labelledby="gate-title">
-    <div class="gate-inner">
-      <img class="gate-logo" src="logo.svg" alt="" width="96" height="96" />
-      <h1 id="gate-title">근처 맛집·술집</h1>
-      <p class="gate-sub">지금 있는 곳에서 갈 만한 곳,<br>별점과 후기까지 한눈에.</p>
-      <div class="gate-buttons">
-              <a class="sns kakao" href="/auth/kakao" data-provider="kakao" hidden>
-                <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5C4.6 1.5 1 4.3 1 7.8c0 2.2 1.5 4.2 3.7 5.3l-.9 3.4c-.1.3.3.5.5.3l4-2.7h.7c4.4 0 8-2.8 8-6.3S13.4 1.5 9 1.5z" /></svg>
-                카카오로 시작하기
-              </a>
-              <a class="sns naver" href="/auth/naver" data-provider="naver" hidden>
-                <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M11.4 9.6 6.4 2.5H2.5v13h4.1V8.4l5 7.1h3.9v-13h-4.1z" /></svg>
-                네이버로 시작하기
-              </a>
-              <a class="sns google" href="/auth/google" data-provider="google" hidden>
-                <svg viewBox="0 0 18 18" aria-hidden="true">
-                  <path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.2-.2-1.7H9v3.3h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z" />
-                  <path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.3 0-4.3-1.6-5-3.7H1v2.3A9 9 0 0 0 9 18z" />
-                  <path fill="#FBBC05" d="M4 10.7a5.4 5.4 0 0 1 0-3.4V5H1a9 9 0 0 0 0 8l3-2.3z" />
-                  <path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 1 5l3 2.3c.7-2.1 2.7-3.7 5-3.7z" />
-                </svg>
-                구글로 시작하기
-              </a>
+    <!-- 왼쪽(모바일: 위쪽) 사진 무대. 사진은 Unsplash 라이선스 (README 참고) -->
+    <div class="gate-stage" aria-hidden="true">
+      <div class="gate-photos">
+        <img src="img/login-grill.jpg" alt="" class="on" />
+        <img src="img/login-table.jpg" alt="" loading="lazy" />
+        <img src="img/login-stall.jpg" alt="" loading="lazy" />
       </div>
-      <p id="gate-status" class="gate-status" hidden></p>
+
+      <div class="gate-copy">
+        <p class="gate-kicker">서울 어디서든, 지금 이 근처</p>
+        <p class="gate-headline">오늘 어디 갈지,<br />고민은 여기까지.</p>
+      </div>
+    </div>
+
+    <!-- 오른쪽(모바일: 아래쪽) 로그인 -->
+    <div class="gate-panel">
+      <div class="gate-inner">
+        <img class="gate-logo" src="logo.svg" alt="" width="56" height="56" />
+        <h1 id="gate-title">근처 맛집·술집</h1>
+        <p class="gate-sub">지금 있는 곳 주변의 맛집과 술집을<br />별점·후기와 함께, AI 추천까지.</p>
+
+        <ul class="gate-points">
+          <li>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.2 6-10A6 6 0 0 0 4 8c0 4.8 6 10 6 10z" /><circle cx="10" cy="8" r="2.2" /></svg>
+            내 위치 반경 300m~2km 맛집·술집
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m10 2.5 2.3 4.8 5.2.6-3.8 3.6 1 5.2L10 14.2l-4.7 2.5 1-5.2-3.8-3.6 5.2-.6z" /></svg>
+            구글 별점과 블로그 후기를 한 번에
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 11.6 7.9 17.5 9.5 11.6 11.1 10 17 8.4 11.1 2.5 9.5 8.4 7.9z" /></svg>
+            모임 장소 고민은 AI에게 물어보기
+          </li>
+        </ul>
+
+        <div class="gate-buttons">
+          <a class="sns kakao" href="/auth/kakao" data-provider="kakao" hidden>
+            <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5C4.6 1.5 1 4.3 1 7.8c0 2.2 1.5 4.2 3.7 5.3l-.9 3.4c-.1.3.3.5.5.3l4-2.7h.7c4.4 0 8-2.8 8-6.3S13.4 1.5 9 1.5z" /></svg>
+            카카오로 시작하기
+          </a>
+          <a class="sns naver" href="/auth/naver" data-provider="naver" hidden>
+            <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M11.4 9.6 6.4 2.5H2.5v13h4.1V8.4l5 7.1h3.9v-13h-4.1z" /></svg>
+            네이버로 시작하기
+          </a>
+          <a class="sns google" href="/auth/google" data-provider="google" hidden>
+            <svg viewBox="0 0 18 18" aria-hidden="true">
+              <path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.2-.2-1.7H9v3.3h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z" />
+              <path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.5-1.8.9-3.1.9-2.3 0-4.3-1.6-5-3.7H1v2.3A9 9 0 0 0 9 18z" />
+              <path fill="#FBBC05" d="M4 10.7a5.4 5.4 0 0 1 0-3.4V5H1a9 9 0 0 0 0 8l3-2.3z" />
+              <path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3l2.6-2.6A9 9 0 0 0 1 5l3 2.3c.7-2.1 2.7-3.7 5-3.7z" />
+            </svg>
+            구글로 시작하기
+          </a>
+        </div>
+        <p id="gate-status" class="gate-status" role="alert" hidden></p>
+        <p class="gate-note">처음이면 바로 가입돼요. 별도로 입력할 정보는 없어요.</p>
+      </div>
     </div>
   </section>
 
@@ -84,12 +118,13 @@
             <button class="tab" data-type="food" role="tab" aria-selected="false">맛집 <span id="count-food"></span></button>
             <button class="tab" data-type="bar" role="tab" aria-selected="false">술집 <span id="count-bar"></span></button>
             <button class="tab" data-type="fav" role="tab" aria-selected="false">찜 <span id="count-fav"></span></button>
+            <button class="tab" data-type="ai" role="tab" aria-selected="false" hidden>AI <span id="count-ai"></span></button>
           </div>
-          <select id="radius" class="radius" aria-label="반경">
-            <option value="300">300m 안</option>
-            <option value="500" selected>500m 안</option>
-            <option value="1000">1km 안</option>
-            <option value="2000">2km 안</option>
+          <select id="radius" class="radius" aria-label="검색 반경">
+            <option value="300">300m</option>
+            <option value="500" selected>500m</option>
+            <option value="1000">1km</option>
+            <option value="2000">2km</option>
           </select>
         </div>
       </header>
@@ -123,6 +158,32 @@
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 1.5v3h-3" /></svg>
         이 지역에서 다시 찾기
       </button>
+      <!-- AI 채팅 추천 (서버에 GEMINI_API_KEY가 있을 때만 보인다) -->
+      <button type="button" id="ai-open" class="ai-open" hidden>
+        <svg class="ai-spark" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 9.3 6.2 14 7.5 9.3 8.8 8 13.5 6.7 8.8 2 7.5 6.7 6.2z" /></svg> AI에게 물어보기
+      </button>
+      <section id="ai-chat" class="ai-chat" aria-label="AI 추천 채팅" hidden>
+        <header class="ai-head">
+          <b>AI 추천</b>
+          <span class="ai-sub">카카오 장소·블로그 후기를 찾아보고 답해요</span>
+          <button type="button" id="ai-close" class="ai-close" aria-label="채팅 닫기">✕</button>
+        </header>
+        <ol id="ai-log" class="ai-log" aria-live="polite">
+          <li class="ai-msg bot">어떤 자리를 찾고 있어요? 인원, 지역, 분위기를 알려 주면 골라 볼게요.
+            <div class="ai-examples">
+              <button type="button" data-example>여자 10명이서 갈만한 중구 음식점 추천해줘</button>
+              <button type="button" data-example>을지로에서 조용히 와인 마시기 좋은 곳</button>
+              <button type="button" data-example>이 근처 혼밥하기 좋은 곳</button>
+            </div>
+          </li>
+        </ol>
+        <form id="ai-form" class="ai-form">
+          <textarea id="ai-input" rows="1" maxlength="500" placeholder="예: 여자 10명이서 갈만한 중구 음식점" aria-label="AI에게 질문"></textarea>
+          <button type="submit" id="ai-send" class="ai-send" aria-label="보내기">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" /></svg>
+          </button>
+        </form>
+      </section>
       <button id="recenter" class="recenter" title="검색 범위 전체 보기" aria-label="검색 범위 전체 보기" hidden>
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 5V1h4M11 1h4v4M15 11v4h-4M5 15H1v-4" /></svg>
       </button>

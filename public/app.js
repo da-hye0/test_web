@@ -14,7 +14,11 @@ const state = {
   routeTo: null, // 지금 경로의 목적지 id
   favorites: [], // 찜한 가게 (서버에 저장)
   favIds: new Set(),
+  ai: [], // AI 채팅이 마지막으로 추천한 가게
 };
+
+// 반경 검색 결과가 아니라 따로 모아 둔 가게를 보여주는 탭 (지도 이동·반경 변경과 상관없음)
+const isPinnedTab = (type) => type === 'fav' || type === 'ai';
 
 // ---------- 지도 (map.js) ----------
 
@@ -35,7 +39,7 @@ const markers = new Map(); // place.id → { el, focus() }
 const researchBtn = $('#research');
 
 mapReady.then((m) => m.onUserMove((c) => {
-  if (!state.center || state.type === 'fav') return;
+  if (!state.center || isPinnedTab(state.type)) return;
   researchBtn.hidden = distanceMeters(state.center, c) < state.radius * 0.4;
 }));
 
@@ -272,7 +276,7 @@ async function loadPlaces() {
   if (!center) return;
 
   const map = await mapReady;
-  if (state.type === 'fav') selectTab('all');
+  if (isPinnedTab(state.type)) selectTab('all');
   if (state.routeMode) exitRouteMode();
   map.setRadius(center.lat, center.lng, radius);
   $('#recenter').hidden = false;
@@ -300,13 +304,13 @@ async function loadPlaces() {
   }
 }
 
-// 찜 탭: 기준 위치가 있으면 거리를 다시 계산해서 가까운 순, 없으면 최근에 찜한 순
-function favoritePlaces() {
+// 찜·AI 추천 탭: 기준 위치가 있으면 거리를 다시 계산한다.
+// 찜은 가까운 순(위치가 없으면 최근에 찜한 순), AI 추천은 AI가 추천한 순서 그대로
+function pinnedPlaces(type) {
   const { center } = state;
-  if (!center) return state.favorites.map((p) => ({ ...p, distance: null }));
-  return state.favorites
-    .map((p) => ({ ...p, distance: distanceMeters(center, p) }))
-    .sort((a, b) => a.distance - b.distance);
+  const list = type === 'ai' ? state.ai : state.favorites;
+  const withDistance = list.map((p) => ({ ...p, distance: center ? distanceMeters(center, p) : null }));
+  return center && type === 'fav' ? withDistance.sort((a, b) => a.distance - b.distance) : withDistance;
 }
 
 function updateCounts() {
@@ -315,17 +319,19 @@ function updateCounts() {
   $('#count-food').textContent = state.center ? foodCount : '';
   $('#count-bar').textContent = state.center ? state.all.length - foodCount : '';
   $('#count-fav').textContent = state.favorites.length || '';
+  $('#count-ai').textContent = state.ai.length || '';
 }
 
 function render(map) {
   const isFav = state.type === 'fav';
-  const places = isFav ? favoritePlaces()
+  const isAi = state.type === 'ai';
+  const places = isPinnedTab(state.type) ? pinnedPlaces(state.type)
     : state.type === 'all' ? state.all : state.all.filter((p) => p.kind === state.type);
-  const label = { all: '맛집·술집', food: '맛집', bar: '술집', fav: '찜한 가게' }[state.type];
+  const label = { all: '맛집·술집', food: '맛집', bar: '술집', fav: '찜한 가게', ai: 'AI 추천 가게' }[state.type];
 
   updateCounts();
-  setStatus(isFav
-    ? `찜한 가게 <b>${places.length}곳</b>`
+  setStatus(isPinnedTab(state.type)
+    ? `${isAi ? 'AI가 추천한 가게' : '찜한 가게'} <b>${places.length}곳</b>`
     : `반경 ${formatDistance(state.radius)} 안에 ${label} <b>${places.length}곳</b>`);
   $('#source').textContent = state.provider === 'kakao' ? '카카오 로컬 데이터' : 'OpenStreetMap 데이터';
 
@@ -337,6 +343,7 @@ function render(map) {
   if (!places.length) {
     list.innerHTML = isFav
       ? '<li class="empty">아직 찜한 가게가 없어요.<br>가게 오른쪽의 ♡를 눌러 저장해 보세요.</li>'
+      : isAi ? '<li class="empty">AI에게 물어보면 추천한 가게가 여기에 모여요.</li>'
       : `<li class="empty">이 근처에서는 ${label}을 찾지 못했어요.<br>반경을 넓히거나 지도에서 다른 곳을 눌러 보세요.</li>`;
     return;
   }
@@ -378,7 +385,7 @@ function render(map) {
       onRoute: () => startRoute(p.id),
     }));
   });
-  if (isFav && !state.center) map.fitPoints(places.map((p) => [p.lat, p.lng]));
+  if (isAi || (isFav && !state.center)) map.fitPoints(places.map((p) => [p.lat, p.lng]));
 }
 
 // 목록 안에서만 스크롤 (scrollIntoView는 바깥 화면까지 밀어 올려서 모바일 시트가 깨진다)
@@ -768,7 +775,7 @@ function selectTab(type) {
 document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     selectTab(tab.dataset.type);
-    if (state.type === 'fav' || (state.center && !state.loading)) mapReady.then(render);
+    if (isPinnedTab(state.type) || (state.center && !state.loading)) mapReady.then(render);
   });
 });
 
@@ -777,9 +784,140 @@ $('#radius').addEventListener('change', (e) => {
   loadPlaces();
 });
 
+// ---------- AI 채팅 추천 ----------
+// 대화는 브라우저가 들고 있다가 매번 서버로 보낸다 (서버는 저장하지 않음)
+
+const aiChat = $('#ai-chat');
+const aiLog = $('#ai-log');
+const aiInput = $('#ai-input');
+const aiMessages = []; // { role: 'user' | 'assistant', text }
+let aiBusy = false;
+
+function openAiChat(open) {
+  aiChat.hidden = !open;
+  $('#ai-open').hidden = open;
+  if (open) aiInput.focus();
+}
+
+$('#ai-open').addEventListener('click', () => openAiChat(true));
+$('#ai-close').addEventListener('click', () => openAiChat(false));
+
+function addAiBubble(role, html) {
+  const li = document.createElement('li');
+  li.className = `ai-msg ${role}`;
+  li.innerHTML = html;
+  aiLog.append(li);
+  aiLog.scrollTo({ top: aiLog.scrollHeight, behavior: 'smooth' });
+  return li;
+}
+
+// AI가 추천한 가게를 "AI 추천" 탭에 모아 지도에 표시하고, 고른 가게를 펼친다
+async function showAiPlaces(places, focusId) {
+  state.ai = places;
+  const tab = document.querySelector('.tab[data-type="ai"]');
+  tab.hidden = false;
+  selectTab('ai');
+  if (state.routeMode) exitRouteMode();
+  const map = await mapReady;
+  render(map);
+  if (focusId) selectPlace(focusId, { from: 'list' });
+  if (MOBILE.matches) {
+    openAiChat(false);
+    if (sheet.state === 'peek') setSheet('half');
+  }
+}
+
+function placeChips(places) {
+  if (!places.length) return '';
+  return `
+    <div class="ai-places">
+      ${places.map((p) => `<button type="button" class="ai-place" data-id="${escapeHtml(p.id)}">${placeStyle(p).emoji} ${escapeHtml(p.name)}</button>`).join('')}
+      <button type="button" class="ai-place all" data-all>지도에서 모두 보기</button>
+    </div>`;
+}
+
+async function askAi(text) {
+  if (aiBusy || !text.trim()) return;
+  aiBusy = true;
+  $('#ai-send').disabled = true;
+  aiMessages.push({ role: 'user', text: text.trim() });
+  addAiBubble('user', `<div class="ai-text">${escapeHtml(text.trim())}</div>`);
+  const typing = addAiBubble('bot typing', '<span></span><span></span><span></span><em>가게를 찾아보는 중…</em>');
+
+  try {
+    const res = await fetch('api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: aiMessages.slice(-10), center: state.center }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'AI 응답을 받지 못했어요.');
+    aiMessages.push({ role: 'assistant', text: data.reply });
+    typing.remove();
+    const bubble = addAiBubble('bot', `<div class="ai-text">${escapeHtml(data.reply)}</div>${placeChips(data.places)}`);
+    bubble.addEventListener('click', (e) => {
+      const chip = e.target.closest('.ai-place');
+      if (chip) showAiPlaces(data.places, chip.dataset.id);
+    });
+    if (data.places.length) showAiPlaces(data.places);
+  } catch (e) {
+    aiMessages.pop(); // 실패한 질문은 대화에서 빼서 다시 물어볼 수 있게
+    typing.remove();
+    addAiBubble('bot error', escapeHtml(e.message));
+  } finally {
+    aiBusy = false;
+    $('#ai-send').disabled = false;
+  }
+}
+
+$('#ai-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = aiInput.value;
+  aiInput.value = '';
+  aiInput.style.height = '';
+  askAi(text);
+});
+
+// Enter로 보내기, Shift+Enter는 줄바꿈 (한글 조합 중 Enter는 무시)
+aiInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    e.preventDefault();
+    $('#ai-form').requestSubmit();
+  }
+});
+
+// 입력하는 만큼 늘어나는 입력창 (최대 4줄 정도)
+aiInput.addEventListener('input', () => {
+  aiInput.style.height = '';
+  aiInput.style.height = `${Math.min(aiInput.scrollHeight, 110)}px`;
+});
+
+aiLog.addEventListener('click', (e) => {
+  const example = e.target.closest('[data-example]');
+  if (example) askAi(example.textContent);
+});
+
+// 서버에 AI 키가 있을 때만 버튼을 보여준다
+function initAiChat() {
+  fetch('api/config', { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((config) => { if (config?.aiChat) $('#ai-open').hidden = false; })
+    .catch(() => {});
+}
+
 // ---------- 로그인 (첫 화면) ----------
 
 const gateStatus = $('#gate-status');
+
+// 로그인 화면 사진: 6초마다 천천히 바꾼다 (로그인 화면이 떠 있을 때만)
+const gatePhotos = [...document.querySelectorAll('.gate-photos img')];
+let gatePhoto = 0;
+setInterval(() => {
+  if (!document.body.classList.contains('locked') || document.hidden) return;
+  gatePhotos[gatePhoto].classList.remove('on');
+  gatePhoto = (gatePhoto + 1) % gatePhotos.length;
+  gatePhotos[gatePhoto].classList.add('on');
+}, 6000);
 
 function lock(locked) {
   document.body.classList.toggle('locked', locked);
@@ -804,7 +942,7 @@ function renderAccount(user) {
   if (user.image) img.src = user.image;
 }
 
-// 서버(server.js)가 없으면(GitHub Pages) 로그인 없이 바로 쓴다
+// 서버(app/main.py)가 없으면(GitHub Pages) 로그인 없이 바로 쓴다
 fetch('api/me', { cache: 'no-store' })
   .then((r) => (r.ok ? r.json() : Promise.reject()))
   .then(({ user, providers }) => {
@@ -823,6 +961,7 @@ fetch('api/me', { cache: 'no-store' })
 
 // 입장하면 바로 서울 중구 주변을 보여준다 (이미 다른 곳을 검색했으면 그대로)
 function start() {
+  initAiChat();
   if (!state.center) setCenter(START.lat, START.lng, START.label);
 }
 

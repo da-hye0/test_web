@@ -2,11 +2,13 @@
 services:
   - type: web
     name: matjip-finder
-    runtime: node
+    runtime: python
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/config
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
       - key: KAKAO_REST_API_KEY
         sync: false # 배포할 때 대시보드에서 입력 (비워둬도 OSM으로 동작)

@@ -10,14 +10,30 @@
 - 모바일 반응형
 
 ## 실행
-Node.js 18 이상만 있으면 됩니다 (npm 패키지 설치 필요 없음).
+Python 3.11 이상이 필요합니다. 서버는 [FastAPI](https://fastapi.tiangolo.com)로 되어 있어요.
 
 ```bash
-cp .env.example .env     # 필요하면 키 입력
-npm start                # http://localhost:3000
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env                          # 필요하면 키 입력
+uvicorn app.main:app --reload --port 3000     # http://localhost:3000
 ```
 
 > 📍 위치 기능은 `localhost` 또는 HTTPS에서만 동작합니다 (브라우저 보안 정책).
+
+## AI 채팅 추천
+지도 오른쪽 아래 **AI에게 물어보기** → "여자 10명이서 갈만한 중구 음식점 추천해줘"처럼 물어보면,
+Gemini가 카카오 장소 검색과 블로그 후기를 직접 찾아보고 3~5곳을 추천합니다. 추천한 가게는 **AI** 탭과 지도에 표시됩니다.
+
+- `.env`에 `GEMINI_API_KEY` (Google AI Studio에서 발급) 필요. 없으면 버튼이 보이지 않아요.
+- 질문 1번에 Gemini 호출이 2~6번 일어납니다 (도구를 쓰고 다시 생각하는 횟수).
+
+## 로그인 화면 사진
+`public/img/login-*.jpg`는 [Unsplash 라이선스](https://unsplash.com/license) 사진입니다 (무료 상업 사용, 출처 표기 의무 없음).
+- [숯불 고기](https://unsplash.com/photos/a-piece-of-meat-is-cooking-on-a-grill-ebNZJGWd4zY)
+- [반찬](https://unsplash.com/photos/a-table-topped-with-bowls-filled-with-food-78jWkCp_jdM)
+- [밤 고깃집 골목](https://unsplash.com/photos/nighttime-street-food-stall-with-korean-signs-psD8HRs1AHQ)
 
 ## 데이터 소스
 | 상황 | 사용 API | 비고 |
@@ -44,24 +60,29 @@ npm start                # http://localhost:3000
 - `design/stitch-halloween.html` — Stitch가 생성한 원본 디자인 HTML
 - `design/stitch-render.png` — 원본 디자인 렌더링
 - `design/stitch-prompt.json` — 생성에 사용한 프롬프트
-- `scripts/stitch.js` — Stitch API(MCP) 호출 CLI. `.env`의 `STITCH_API_KEY` 사용
+- `scripts/stitch.py` — Stitch API(MCP) 호출 CLI. `.env`의 `STITCH_API_KEY` 사용
 
 ```bash
-node scripts/stitch.js                                   # 사용 가능한 도구 목록
-node scripts/stitch.js list_projects
-node scripts/stitch.js edit_screens '{"projectId":"...","selectedScreenIds":["..."],"prompt":"..."}'
+python scripts/stitch.py                                   # 사용 가능한 도구 목록
+python scripts/stitch.py list_projects
+python scripts/stitch.py edit_screens '{"projectId":"...","selectedScreenIds":["..."],"prompt":"..."}'
 ```
 
 
 ## 구조
 ```
-server.js          # 정적 파일 + /api/geocode, /api/reverse, /api/places (API 키를 브라우저에 노출하지 않음)
+app/main.py        # FastAPI 서버: 정적 파일 + /api/* (API 키를 브라우저에 노출하지 않음)
+app/places.py      # 카카오·OpenStreetMap 검색, 블로그 후기, 구글 별점, 길찾기
+app/auth.py        # 카카오·네이버·구글 로그인 (서명된 쿠키 세션)
+app/store.py       # 찜 목록 저장 (로컬: data/favorites.json, Cloud Run: Firestore)
+app/cache.py       # 외부 API 결과 캐시
+app/ai.py          # AI 채팅 추천 (Gemini가 카카오 검색·블로그 후기를 도구로 써서 추천)
 public/index.html
 public/style.css   # 디자인 토큰·레이아웃
 public/app.js      # Leaflet 지도, 검색, 목록 렌더링
-public/providers.js # 데이터 백엔드 선택: server.js → 카카오 JS SDK → OpenStreetMap
+public/providers.js # 데이터 백엔드 선택: 파이썬 서버 → 카카오 JS SDK → OpenStreetMap
 public/config.js   # 정적 배포용 설정 (카카오 JavaScript 키)
-scripts/stitch.js  # Google Stitch API CLI
+scripts/stitch.py  # Google Stitch API CLI
 design/            # Stitch 결과물 & 스크린샷
 ```
 
@@ -75,7 +96,7 @@ design/            # Stitch 결과물 & 스크린샷
   - 카카오 데이터를 쓰려면 `public/config.js`에 카카오 **JavaScript 키**를 넣고,
     카카오 developers → 플랫폼 → Web에 `https://da-hye0.github.io`를 등록하세요.
 
-## 무료 배포 ② Render (Node 서버 그대로)
+## 무료 배포 ② Render (파이썬 서버 그대로)
 1. 이 폴더를 GitHub 저장소에 올립니다 (`.env`는 자동으로 제외됨).
 2. [render.com](https://render.com)에 GitHub로 가입 → **New + → Blueprint** → 저장소 선택.
 3. `KAKAO_REST_API_KEY` 입력(선택) → **Apply**. 몇 분 뒤 `https://matjip-finder-xxxx.onrender.com` 주소가 생깁니다.
