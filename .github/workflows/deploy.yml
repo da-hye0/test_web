@@ -1,0 +1,66 @@
+# CI: 모든 push·PR에서 테스트
+# CD: v로 시작하는 태그를 push 하면 (예: git tag v1.2.0 && git push origin v1.2.0) 테스트 후 Cloud Run에 배포
+#     GitHub → GCP 인증은 Workload Identity Federation (저장소에 키를 두지 않는다, 준비는 scripts/setup-github-deploy.sh)
+name: CI / CD
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT_ID: project-d813a5b1-563c-4745-80a
+  REGION: asia-northeast1
+  SERVICE: matjip
+  WIF_PROVIDER: projects/731281123801/locations/global/workloadIdentityPools/github/providers/github-oidc
+  DEPLOY_SA: github-deployer@project-d813a5b1-563c-4745-80a.iam.gserviceaccount.com
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  deploy:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: cloud-run-deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # 환경 변수(API 키 등)는 서비스에 이미 있으니 그대로 두고 코드만 새로 올린다.
+      # 리비전 이름에 태그를 붙여 콘솔에서 어떤 버전인지 바로 보이게 한다 (v1.2.0 → matjip-v1-2-0-<실행번호>)
+      - name: Deploy to Cloud Run
+        run: |
+          VERSION=$(echo "$GITHUB_REF_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9\n' '-')
+          gcloud run deploy "$SERVICE" --source . \
+            --project "$PROJECT_ID" --region "$REGION" --quiet \
+            --revision-suffix "${VERSION}-${GITHUB_RUN_NUMBER}" \
+            --update-labels "version=${VERSION},commit=${GITHUB_SHA::7}"
+
+      - name: Smoke test
+        run: |
+          curl -fsS --retry 5 --retry-delay 5 https://matjip.dahye.dev/api/config
+          curl -fsS https://matjip.dahye.dev/api/me | grep -q '"user"'

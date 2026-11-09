@@ -1,0 +1,34 @@
+# AI 응답 후처리: 가게 이름 찾기, 코스 JSON 읽기, '뭉치가 한 일' 문장
+from app import ai
+
+FOUND = {
+    "kakao-1": {"id": "kakao-1", "name": "소", "kind": "food"},
+    "kakao-2": {"id": "kakao-2", "name": "스키마야", "kind": "bar"},
+    "kakao-3": {"id": "kakao-3", "name": "만게츠 천호점", "kind": "bar"},
+}
+
+
+def test_mentioned_keeps_order_and_ignores_name_inside_other_words():
+    reply = "1. 만게츠 천호점은 아늑하고, 2. 스키마야에서는 소주 한잔 하기 좋아요."
+    names = [p["name"] for p in ai._mentioned(reply, FOUND)]
+    assert names == ["만게츠 천호점", "스키마야"]  # "소주"의 "소"는 가게 "소"가 아니다
+
+
+def test_parse_json_from_text_with_extra_words():
+    data = ai._parse_json('코스예요 {"title": "밤 코스", "steps": []} 끝')
+    assert data == {"title": "밤 코스", "steps": []}
+    assert ai._parse_json("JSON이 없어요") is None
+
+
+def test_trace_lines():
+    session = ai.Session(None)
+    session.found = dict(FOUND)
+    search = ai._trace_line({"name": "search_places", "args": {"query": "천호 이자카야"}}, {"results": [1, 2, 3]}, session)
+    reviews = ai._trace_line({"name": "get_reviews", "args": {"id": "kakao-2"}}, {}, session)
+    assert search == "'천호 이자카야' 검색 · 3곳"
+    assert reviews == "스키마야 후기 읽기"
+
+
+def test_system_prompt_has_time_first_rule():
+    assert "지금 시간에 문 열었을 곳인지가 가장 먼저다" in ai.SYSTEM_PROMPT
+    assert "연인·남자친구" in ai.SYSTEM_PROMPT
