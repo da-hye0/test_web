@@ -801,7 +801,10 @@ function openAiChat(open) {
   if (open) aiInput.focus();
 }
 
-$('#ai-open').addEventListener('click', () => openAiChat(true));
+$('#ai-open').addEventListener('click', () => {
+  openAiChat(true);
+  if (!aiMessages.length) refreshAiSituation();
+});
 $('#ai-close').addEventListener('click', () => openAiChat(false));
 
 function addAiBubble(role, html) {
@@ -908,6 +911,36 @@ function initAiChat() {
     .then((r) => (r.ok ? r.json() : null))
     .then((config) => { if (config?.aiChat) $('#ai-open').hidden = false; })
     .catch(() => {});
+}
+
+// 처음 HTML에 있는 기본 예시 질문
+const DEFAULT_EXAMPLES = [...document.querySelectorAll('#ai-examples [data-example]')].map((el) => el.textContent);
+
+// 지금 날씨에 맞는 예시 질문 (위에 있을수록 먼저)
+const SITUATION_EXAMPLES = [
+  ['rain', '비 오는 날 막걸리에 파전 먹을 곳'],
+  ['snow', '눈 오는 날 따뜻하게 먹을 곳 추천해줘'],
+  ['cold', '쌀쌀한데 뜨끈한 국물 요리 추천해줘'],
+  ['hot', '더운데 시원한 냉면집 추천해줘'],
+  ['dust', '미세먼지 심한데 실내에서 편하게 먹을 곳'],
+  ['late', '지금 늦게까지 하는 술집 있을까?'],
+  ['weekend-night', '주말 저녁 친구들이랑 갈 만한 곳'],
+];
+
+// 채팅창을 열 때 지금 위치의 날씨를 머리에 보여주고, 예시 질문을 상황에 맞게 바꾼다
+async function refreshAiSituation() {
+  const c = state.center;
+  if (!c) return;
+  const now = await fetch(`api/now?lat=${c.lat}&lng=${c.lng}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const w = now?.weather;
+  if (!w) return;
+  const area = (c.label || '').split(' ').slice(0, 2).join(' ');
+  $('#ai-sub').textContent = [area, `${w.temp}° ${w.sky}`, w.dust ? `미세먼지 ${w.dust}` : '', now.season].filter(Boolean).join(' · ');
+
+  const picks = SITUATION_EXAMPLES.filter(([tag]) => now.tags.includes(tag)).map(([, text]) => text);
+  if (!picks.length) return;
+  $('#ai-examples').innerHTML = [...picks, ...DEFAULT_EXAMPLES].slice(0, 3)
+    .map((text) => `<button type="button" data-example>${escapeHtml(text)}</button>`).join('');
 }
 
 // ---------- 로그인 (첫 화면) ----------

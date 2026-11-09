@@ -854,7 +854,7 @@ body.panel-collapsed .panel-tab svg { transform: rotate(180deg); }
   position: absolute;
   right: 16px;
   bottom: 20px;
-  z-index: 750;
+  z-index: 1100; /* 지도 확대 버튼(Leaflet 1000)보다 위 */
   display: flex;
   flex-direction: column;
   width: min(380px, calc(100% - 32px));

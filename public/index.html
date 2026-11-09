@@ -147,20 +147,20 @@
       <section id="ai-chat" class="ai-chat" aria-label="AI 추천 채팅" hidden>
         <header class="ai-head">
           <b>AI 추천</b>
-          <span class="ai-sub">카카오 장소·블로그 후기를 찾아보고 답해요</span>
+          <span id="ai-sub" class="ai-sub">카카오 장소·블로그 후기를 찾아보고 답해요</span>
           <button type="button" id="ai-close" class="ai-close" aria-label="채팅 닫기">✕</button>
         </header>
         <ol id="ai-log" class="ai-log" aria-live="polite">
           <li class="ai-msg bot">어떤 자리를 찾고 있어요? 인원, 지역, 분위기를 알려 주면 골라 볼게요.
-            <div class="ai-examples">
-              <button type="button" data-example>여자 10명이서 갈만한 중구 음식점 추천해줘</button>
+            <div id="ai-examples" class="ai-examples">
+              <button type="button" data-example>회식하기 좋은 고깃집 추천해줘</button>
               <button type="button" data-example>을지로에서 조용히 와인 마시기 좋은 곳</button>
               <button type="button" data-example>이 근처 혼밥하기 좋은 곳</button>
             </div>
           </li>
         </ol>
         <form id="ai-form" class="ai-form">
-          <textarea id="ai-input" rows="1" maxlength="500" placeholder="예: 여자 10명이서 갈만한 중구 음식점" aria-label="AI에게 질문"></textarea>
+          <textarea id="ai-input" rows="1" maxlength="500" placeholder="인원, 지역, 분위기를 편하게 적어 주세요" aria-label="AI에게 질문"></textarea>
           <button type="submit" id="ai-send" class="ai-send" aria-label="보내기">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" /></svg>
           </button>

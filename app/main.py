@@ -9,7 +9,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import ai, auth, config, places, store
+from . import ai, auth, config, context, places, store
 from .cache import cached
 from .fetch import client
 
@@ -194,6 +194,18 @@ async def google(name: str = "", address: str = "", lat: str = "", lng: str = ""
     place = await cached(f"google:{name}|{c['lat']},{c['lng']}",
                          lambda: places.google_rating(name, address, c["lat"], c["lng"]))
     return send_json(200, {"place": place})
+
+
+# ---------- 지금 상황 (날씨·계절) ----------
+
+@app.get("/api/now")
+async def now(lat: str = "", lng: str = "") -> JSONResponse:
+    c = parse_coord(lat, lng)
+    snap = await context.snapshot(c["lat"] if c else None, c["lng"] if c else None)
+    return send_json(200, {
+        "date": snap["date"], "time": snap["time"], "season": snap["season"],
+        "weather": snap["weather"], "tags": snap["tags"],
+    }, 600)
 
 
 # ---------- AI 채팅 추천 ----------

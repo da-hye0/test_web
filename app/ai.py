@@ -9,7 +9,7 @@ import logging
 
 import httpx
 
-from . import config, places
+from . import config, context, places
 from .config import env
 from .errors import UserError
 from .fetch import client
@@ -40,7 +40,18 @@ SYSTEM_PROMPT = """너는 한국의 맛집·술집 추천 도우미야. 사용�
 - 추천은 3~5곳. 각 가게마다 이름, 종류, 위치(동네), 추천 이유 한두 줄. 후기에서 확인한 내용이면 그렇다고 말해.
 - 후기에서 확인 못 한 조건(예: 10명 수용 가능 여부)은 단정하지 말고 "방문 전에 전화로 단체 예약 가능한지 확인해 보세요"처럼 안내해.
 - 한국어로, 친근하고 짧게. 마크다운 표나 제목(#)은 쓰지 말고, 줄바꿈과 "1." 같은 번호 목록만 써.
-- 맛집·술집과 관계없는 요청이면 정중하게 이 서비스에서 도울 수 있는 일을 알려 줘."""
+- 맛집·술집과 관계없는 요청이면 정중하게 이 서비스에서 도울 수 있는 일을 알려 줘.
+
+지금의 날씨·기온·계절·시간 (아래 '지금 상황'에 있다)
+- 사용자가 따로 말하지 않으면 지금 상황에 어울리는 곳을 우선해. 예를 들면
+  비·눈: 파전·막걸리, 국밥, 칼국수처럼 비 오는 날 생각나는 메뉴. 실내이고 역에서 가까운 곳.
+  쌀쌀하거나 추움(체감 10°C 이하): 국물 요리(국밥, 전골, 감자탕, 어묵탕), 따뜻한 실내. 야외 포차·루프탑은 피해.
+  더움(체감 27°C 이상): 냉면, 물회, 콩국수, 시원한 맥주. 에어컨 있는 실내.
+  미세먼지 나쁨: 야외·테라스는 피하고 실내 위주로.
+  늦은 밤: 늦게까지 여는 술집·포차·국밥집. 영업시간은 확인할 수 없으니 "늦게까지 하는지 확인해 보세요"라고 안내해.
+  주말 저녁: 인기 있는 곳은 붐빌 수 있으니 예약·웨이팅을 언급해.
+- 사용자가 원하는 메뉴·조건이 있으면 그게 먼저다. 날씨는 거기에 덧붙이는 정도로만.
+- 답변 첫 문장에서 지금 날씨를 한마디로 자연스럽게 짚어 줘. (예: "쌀쌀한 늦가을 저녁이라 국물 있는 곳 위주로 골라봤어요.") 날씨 설명을 길게 늘어놓지는 마."""
 
 TOOLS = [{
     "functionDeclarations": [
@@ -224,9 +235,10 @@ async def chat(messages: list, center: dict | None) -> dict:
     if not contents or contents[-1]["role"] != "user":
         raise UserError("empty chat", "질문을 입력해 주세요.", status=400)
 
-    system = SYSTEM_PROMPT
+    snap = await context.snapshot(center["lat"] if center else None, center["lng"] if center else None)
+    system = SYSTEM_PROMPT + "\n\n지금 상황\n" + context.describe(snap)
     if center:
-        system += f"\n\n사용자가 지금 보고 있는 지도 위치: {center.get('label') or '알 수 없음'} (위도 {center['lat']}, 경도 {center['lng']})"
+        system += f"\n사용자가 지금 보고 있는 지도 위치: {center.get('label') or '알 수 없음'} (위도 {center['lat']}, 경도 {center['lng']})"
     session = Session(center)
 
     for round_no in range(MAX_ROUNDS):
