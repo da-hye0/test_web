@@ -8,6 +8,9 @@
 #   GET  /auth/{provider}/callback  → 코드 교환, 프로필 조회, 세션 쿠키 발급 후 / 로 이동
 #   POST /auth/logout               → 세션 삭제
 #   GET  /api/me                    → { user, providers }
+#
+# iOS 앱: /auth/{provider}?app=1 로 시작하면 로그인이 끝난 뒤 쿠키 대신 matjip://auth?sid=… 로 돌려보낸다.
+#         앱은 그 값을 Authorization: Bearer <sid> 헤더로 보낸다 (웹과 같은 서명 세션)
 import base64
 import hashlib
 import hmac
@@ -157,8 +160,13 @@ def _set_cookie(response: Response, name: str, value: str, max_age: int) -> None
     )
 
 
+APP_CALLBACK = "matjip://auth"
+
+
 def get_user(request: Request) -> dict | None:
-    session = unseal(request.cookies.get("sid"))
+    auth_header = request.headers.get("authorization", "")
+    token = auth_header[7:] if auth_header.lower().startswith("bearer ") else request.cookies.get("sid")
+    session = unseal(token)
     return session.get("user") if session else None
 
 
@@ -189,10 +197,18 @@ async def logout() -> Response:
     return response
 
 
+def _back(is_app: bool, **query: str) -> RedirectResponse:
+    """로그인을 마치고 돌아갈 곳: 웹은 첫 화면, 앱은 matjip:// 주소"""
+    if is_app:
+        return _redirect(f"{APP_CALLBACK}?{urlencode(query)}")
+    return _redirect(f"/?{urlencode(query)}" if query else "/")
+
+
 @router.get("/auth/{name}")
-async def start_login(name: str) -> Response:
+async def start_login(name: str, app: str = "") -> Response:
+    is_app = app == "1"
     if name not in ENABLED:
-        return _redirect("/?login=unavailable")
+        return _back(is_app, login="unavailable")
     p = PROVIDERS[name]
     state = secrets.token_urlsafe(24)
     params = {"response_type": "code", "client_id": p["client_id"], "redirect_uri": _callback_url(name), "state": state}
@@ -201,33 +217,35 @@ async def start_login(name: str) -> Response:
     response = _redirect(f"{p['authorize_url']}?{urlencode(params)}")
     # state는 서명 쿠키에 담아 두고 콜백에서 비교 (로그인 요청 위조 방지)
     _set_cookie(response, "oauth_state",
-                seal({"state": state, "provider": name, "exp": _now_ms() + STATE_TTL_SEC * 1000}), STATE_TTL_SEC)
+                seal({"state": state, "provider": name, "app": is_app, "exp": _now_ms() + STATE_TTL_SEC * 1000}),
+                STATE_TTL_SEC)
     return response
 
 
 @router.get("/auth/{name}/callback")
 async def finish_login(name: str, request: Request) -> Response:
+    pending = unseal(request.cookies.get("oauth_state"))
+    is_app = bool(pending and pending.get("app"))
     if name not in ENABLED:
-        return _redirect("/?login=unavailable")
+        return _back(is_app, login="unavailable")
     try:
-        response = await _finish_login(name, request)
+        response = await _finish_login(name, request, pending, is_app)
     except Exception as e:  # noqa: BLE001 — 어떤 이유로 실패해도 첫 화면으로 돌려보낸다
         log.error("[auth:%s] %s", name, e)
-        response = _redirect("/?login=failed")
+        response = _back(is_app, login="failed")
     _set_cookie(response, "oauth_state", "", 0)
     return response
 
 
-async def _finish_login(name: str, request: Request) -> Response:
+async def _finish_login(name: str, request: Request, pending: dict | None, is_app: bool) -> Response:
     params = request.query_params
     state = params.get("state")
-    pending = unseal(request.cookies.get("oauth_state"))
 
     # 사용자가 동의 화면에서 취소한 경우 등
     if params.get("error"):
-        return _redirect("/?login=cancelled")
+        return _back(is_app, login="cancelled")
     if not pending or pending.get("provider") != name or pending.get("state") != state:
-        return _redirect("/?login=expired")
+        return _back(is_app, login="expired")
 
     p = PROVIDERS[name]
     body = {
@@ -253,7 +271,9 @@ async def _finish_login(name: str, request: Request) -> Response:
     # 카카오 프로필 사진이 http로 오는 경우가 있어 https로 (HTTPS 페이지에서 깨짐 방지)
     if (profile.get("image") or "").startswith("http://"):
         profile["image"] = "https://" + profile["image"][len("http://"):]
+    sid = seal({"user": {"provider": name, **profile}, "exp": _now_ms() + SESSION_TTL_SEC * 1000})
+    if is_app:
+        return _back(True, sid=sid)
     response = _redirect("/")
-    _set_cookie(response, "sid", seal({"user": {"provider": name, **profile}, "exp": _now_ms() + SESSION_TTL_SEC * 1000}),
-                SESSION_TTL_SEC)
+    _set_cookie(response, "sid", sid, SESSION_TTL_SEC)
     return response
