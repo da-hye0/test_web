@@ -6,6 +6,7 @@
 # 가게 이름·주소는 도구 결과에 있는 것만 쓰게 해서, 없는 가게를 지어내지 않게 한다.
 import asyncio
 import logging
+import re
 
 import httpx
 
@@ -278,10 +279,14 @@ async def chat(messages: list, center: dict | None) -> dict:
 
 
 def _mentioned(reply: str, found: dict[str, dict]) -> list[dict]:
-    """답변에 이름이 나온 가게만, 나온 순서대로 (지도에 표시용)"""
+    """답변에 이름이 나온 가게만, 나온 순서대로 (지도에 표시용)
+    이름 앞뒤가 다른 글자로 이어지면 다른 낱말의 일부로 본다 (예: 가게 "소"가 "소주"에 걸리지 않게)"""
     hits = []
     for p in found.values():
-        at = reply.find(p["name"])
+        name = p["name"]
+        m = re.search(rf"(?<![가-힣A-Za-z0-9]){re.escape(name)}(?![가-힣A-Za-z0-9])", reply)
+        # 3글자 이상이면 "은주정은"처럼 조사가 붙은 경우도 인정
+        at = m.start() if m else (reply.find(name) if len(name) >= 3 else -1)
         if at >= 0:
             hits.append((at, p))
     seen, out = set(), []
