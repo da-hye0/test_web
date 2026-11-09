@@ -229,6 +229,23 @@ async def chat(request: Request) -> JSONResponse:
     return send_json(200, await ai.chat(messages, center))
 
 
+@app.post("/api/plan")
+async def plan(request: Request) -> JSONResponse:
+    """AI가 지금 갈 코스(1~3곳)를 짜 준다 (앱의 '오늘' 화면)"""
+    try:
+        body = json.loads(await request.body() or b"{}")
+    except ValueError:
+        return send_json(400, {"error": "요청이 올바르지 않아요."})
+    if not isinstance(body, dict):
+        return send_json(400, {"error": "요청이 올바르지 않아요."})
+    center_raw = body.get("center") or {}
+    center = parse_coord(center_raw.get("lat"), center_raw.get("lng")) if isinstance(center_raw, dict) else None
+    if center:
+        center["label"] = str(center_raw.get("label") or "")[:120]
+    return send_json(200, await ai.plan(str(body.get("who") or ""), str(body.get("mood") or ""),
+                                        str(body.get("note") or ""), center))
+
+
 @app.api_route("/api/{rest:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
 async def not_found(rest: str) -> JSONResponse:
     return send_json(404, {"error": "Not found"})

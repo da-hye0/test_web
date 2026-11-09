@@ -5,6 +5,7 @@
 #   - get_reviews   : 가게 블로그 후기 (단체석·룸·예약 같은 정보 확인용)
 # 가게 이름·주소는 도구 결과에 있는 것만 쓰게 해서, 없는 가게를 지어내지 않게 한다.
 import asyncio
+import json
 import logging
 import re
 
@@ -253,21 +254,41 @@ async def chat(messages: list, center: dict | None) -> dict:
     system = SYSTEM_PROMPT + "\n\n지금 상황\n" + context.describe(snap)
     if center:
         system += f"\n사용자가 지금 보고 있는 지도 위치: {center.get('label') or '알 수 없음'} (위도 {center['lat']}, 경도 {center['lng']})"
-    session = Session(center)
+    reply, trace, session = await _run(contents, system, center)
+    if not reply:
+        reply = "알맞은 답을 만들지 못했어요. 질문을 조금 바꿔서 다시 물어봐 주세요."
+    return {"reply": reply, "places": _mentioned(reply, session.found), "trace": trace}
 
+
+def _trace_line(call: dict, result: dict, session: Session) -> str:
+    """AI가 한 일을 사람이 읽는 한 줄로 (앱에서 '뭉치가 한 일'로 보여준다)"""
+    name, args = call.get("name"), call.get("args") or {}
+    count = len(result.get("results") or [])
+    if name == "search_places":
+        return f"'{args.get('query', '')}' 검색 · {count}곳"
+    if name == "search_nearby":
+        return f"근처 {args.get('radius', 1000)}m 둘러보기 · {count}곳"
+    if name == "get_reviews":
+        place = session.found.get(str(args.get("id") or args.get("place_id")))
+        return f"{place['name'] if place else '가게'} 후기 읽기"
+    return str(name)
+
+
+async def _run(contents: list[dict], system: str, center: dict | None) -> tuple[str, list[str], Session]:
+    """AI가 도구를 부르며 찾아보고, 최종 답(텍스트)과 한 일 목록을 돌려준다"""
+    session = Session(center)
+    trace: list[str] = []
     for round_no in range(MAX_ROUNDS):
         data = await _generate(contents, system)
         candidate = (data.get("candidates") or [{}])[0]
-        content = candidate.get("content") or {}
-        parts = content.get("parts") or []
+        parts = (candidate.get("content") or {}).get("parts") or []
         calls = [p["functionCall"] for p in parts if "functionCall" in p]
 
         if not calls:
             reply = "".join(p.get("text", "") for p in parts if not p.get("thought")).strip()
             if not reply:
                 log.warning("[ai] 빈 응답: %s", candidate.get("finishReason"))
-                reply = "알맞은 답을 만들지 못했어요. 질문을 조금 바꿔서 다시 물어봐 주세요."
-            return {"reply": reply, "places": _mentioned(reply, session.found)}
+            return reply, trace, session
 
         # AI가 부른 도구들을 동시에 실행하고, 결과를 한 번에 돌려준다 (생각 서명 등 원래 응답은 그대로 보존)
         contents.append({"role": "model", "parts": parts})
@@ -275,6 +296,7 @@ async def chat(messages: list, center: dict | None) -> dict:
         results = await asyncio.gather(*(session.call(c.get("name", ""), c.get("args") or {}) for c in calls))
         responses = []
         for c, result in zip(calls, results):
+            trace.append(_trace_line(c, result, session))
             response = {"name": c.get("name", ""), "response": result}
             if c.get("id"):
                 response["id"] = c["id"]
@@ -282,13 +304,63 @@ async def chat(messages: list, center: dict | None) -> dict:
         contents.append({"role": "user", "parts": responses})
 
     # 도구를 너무 많이 부르면: 더 찾지 말고 지금까지 찾은 것으로 답하게 한다
-    contents.append({"role": "user", "parts": [{"text": "이제 더 검색하지 말고, 지금까지 찾은 가게로 바로 추천해 줘."}]})
+    contents.append({"role": "user", "parts": [{"text": "이제 더 검색하지 말고, 지금까지 찾은 가게로 바로 답해 줘."}]})
     data = await _generate(contents, system, allow_tools=False)
     parts = ((data.get("candidates") or [{}])[0].get("content") or {}).get("parts") or []
-    reply = "".join(p.get("text", "") for p in parts if not p.get("thought")).strip()
-    if not reply:
-        reply = "찾아볼 곳이 너무 많아서 정리하지 못했어요. 지역이나 조건을 조금 좁혀서 다시 물어봐 주세요."
-    return {"reply": reply, "places": _mentioned(reply, session.found)}
+    return "".join(p.get("text", "") for p in parts if not p.get("thought")).strip(), trace, session
+
+
+PLAN_PROMPT = """
+
+지금부터는 대화가 아니라 '코스 짜기'야. 사용자가 고른 동행·분위기·메모와 지금 시간·날씨를 보고, 지도 위치 근처에서 지금 바로 갈 수 있는 코스를 짜.
+- 코스는 1~3곳 (예: 1차 식사 → 2차 한잔). 밤 10시 이후면 한두 곳만, 늦게까지 하는 곳으로.
+- 가게끼리 걸어서 10분 안쪽이면 좋다. 주소를 보고 판단해.
+- 시간은 지금부터 10~20분 뒤에 첫 곳에 도착한다고 보고, 한 곳에 1~2시간씩 잡아 "HH:MM"으로 적어.
+- 마지막 답은 아래 JSON 하나만 출력해. 다른 말, 코드블록 표시(```)는 쓰지 마.
+{"title": "코스 이름 (10자 안팎, 예: 쌀쌀한 밤 이자카야 코스)",
+ "intro": "왜 이렇게 짰는지 한두 문장, 지금 날씨·시간을 자연스럽게 짚어서",
+ "steps": [{"time": "23:20", "label": "1차", "id": "도구 결과의 id 그대로", "why": "이 가게를 고른 이유 한 문장"}],
+ "tip": "방문 전 팁 한 문장 (예약·영업시간 확인 등)"}"""
+
+WHO = {"couple": "연인과 데이트", "friends": "친구 몇 명", "solo": "혼자", "family": "가족·부모님", "team": "회식·단체"}
+MOOD = {"cozy": "조용하고 아늑하게", "drink": "한잔하러", "hearty": "든든하게 배부르게", "light": "가볍게", "special": "특별한 날"}
+
+
+def _parse_json(text: str) -> dict | None:
+    m = re.search(r"\{.*\}", text, re.S)
+    if not m:
+        return None
+    try:
+        return json.loads(m.group(0))
+    except ValueError:
+        return None
+
+
+async def plan(who: str, mood: str, note: str, center: dict | None) -> dict:
+    if not GEMINI_KEY:
+        raise UserError("no GEMINI_API_KEY", "AI 키가 설정되지 않았어요.", status=503)
+    snap = await context.snapshot(center["lat"] if center else None, center["lng"] if center else None)
+    system = SYSTEM_PROMPT + PLAN_PROMPT + "\n\n지금 상황\n" + context.describe(snap)
+    if center:
+        system += f"\n지도 위치: {center.get('label') or '알 수 없음'} (위도 {center['lat']}, 경도 {center['lng']})"
+    ask = [f"누구와: {WHO.get(who, '정하지 않음')}", f"분위기: {MOOD.get(mood, '정하지 않음')}"]
+    if note.strip():
+        ask.append(f"메모: {note.strip()[:200]}")
+    contents = [{"role": "user", "parts": [{"text": "\n".join(ask) + "\n이 조건으로 지금 갈 코스를 짜 줘."}]}]
+
+    text, trace, session = await _run(contents, system, center)
+    data = _parse_json(text) or {}
+    steps = []
+    for st in data.get("steps") or []:
+        place = session.found.get(str(st.get("id")))
+        if not place:
+            continue  # 도구 결과에 없는 가게(지어낸 것)는 버린다
+        steps.append({"time": str(st.get("time") or ""), "label": str(st.get("label") or ""),
+                      "why": str(st.get("why") or ""), "place": place})
+    if not steps:
+        raise UserError(f"plan 실패: {text[:300]}", "코스를 짜지 못했어요. 조건을 바꿔서 다시 맡겨 주세요.")
+    return {"title": str(data.get("title") or "오늘의 코스"), "intro": str(data.get("intro") or ""),
+            "tip": str(data.get("tip") or ""), "steps": steps, "trace": trace}
 
 
 def _mentioned(reply: str, found: dict[str, dict]) -> list[dict]:
