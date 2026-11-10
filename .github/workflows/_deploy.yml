@@ -67,9 +67,20 @@ jobs:
       # buildpacks로 이미지만 만든다 (배포는 다음 단계에서 --image로)
       - name: Build image
         if: steps.image.outputs.exists == 'false' && inputs.build
+        # 로그를 실시간으로 받으려면 프로젝트 뷰어 권한이 필요해서, 빌드만 걸어 두고 끝날 때까지 상태를 본다
         run: |
-          gcloud builds submit --project "$PROJECT_ID" --region "$REGION" --quiet \
-            --pack "image=$IMAGE"
+          BUILD_ID=$(gcloud builds submit --project "$PROJECT_ID" --region "$REGION" --quiet --async \
+            --pack "image=$IMAGE" --format 'value(id)')
+          echo "빌드 $BUILD_ID: https://console.cloud.google.com/cloud-build/builds;region=$REGION/$BUILD_ID?project=$PROJECT_ID"
+          for _ in $(seq 1 90); do
+            STATUS=$(gcloud builds describe "$BUILD_ID" --project "$PROJECT_ID" --region "$REGION" --format 'value(status)')
+            case "$STATUS" in
+              SUCCESS) echo "빌드 성공"; exit 0 ;;
+              FAILURE|INTERNAL_ERROR|TIMEOUT|CANCELLED|EXPIRED) echo "::error::빌드 $STATUS (위 링크에서 로그 확인)"; exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "::error::빌드가 15분 안에 끝나지 않았어요"; exit 1
 
       # 환경 변수(API 키 등)는 서비스에 이미 있으니 그대로 두고 이미지만 바꾼다
       # 리비전 이름에 버전을 붙여 콘솔에서 바로 보이게 한다 (v1.2.0 → matjip-v1-2-0-<실행번호>-<재시도>)
