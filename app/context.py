@@ -3,7 +3,7 @@
 # Cloud Run처럼 IP를 여럿이 같이 쓰는 곳에선 Open-Meteo 하루 한도가 금방 차서, 실패하면 노르웨이 기상청(MET Norway, 키 없음)으로 넘어간다
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from .cache import cached
@@ -110,6 +110,7 @@ async def _fetch_met(lat: float, lng: float) -> dict:
         if chance is not None:
             chances.append(chance)
     temps = temps or [cur["air_temperature"]]
+    tomorrow = _tomorrow_met(series, today)
     return {
         "sky": sky,
         "kind": kind,
@@ -119,7 +120,27 @@ async def _fetch_met(lat: float, lng: float) -> dict:
         "max": round(max(temps)),
         "rainChance": round(max(chances)) if chances else None,
         "wind": round(cur.get("wind_speed", 0), 1),
+        "tomorrow": tomorrow,
     }
+
+
+def _tomorrow_met(series: list, today) -> dict | None:
+    next_day = today + timedelta(days=1)
+    temps, chances, sky = [], [], None
+    for item in series:
+        at = datetime.fromisoformat(item["time"].replace("Z", "+00:00")).astimezone(KST)
+        if at.date() != next_day:
+            continue
+        temps.append(item["data"]["instant"]["details"]["air_temperature"])
+        hour = item["data"].get("next_1_hours") or item["data"].get("next_6_hours") or {}
+        if hour.get("details", {}).get("probability_of_precipitation") is not None:
+            chances.append(hour["details"]["probability_of_precipitation"])
+        if at.hour == 12 or (sky is None and hour.get("summary")):
+            sky = _met_sky(hour.get("summary", {}).get("symbol_code", "cloudy"))[0]
+    if not temps:
+        return None
+    return {"sky": sky or "흐림", "min": round(min(temps)), "max": round(max(temps)),
+            "rainChance": round(max(chances)) if chances else None}
 
 
 async def _fetch_weather(lat: float, lng: float) -> dict:
@@ -128,8 +149,8 @@ async def _fetch_weather(lat: float, lng: float) -> dict:
         fetch_json("https://api.open-meteo.com/v1/forecast", timeout=6, params={
             **common,
             "current": "temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m",
-            "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max",
-            "forecast_days": 1,
+            "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code",
+            "forecast_days": 2,
         }),
         fetch_json("https://air-quality-api.open-meteo.com/v1/air-quality", timeout=6, params={
             **common, "current": "pm10,pm2_5",
@@ -155,7 +176,18 @@ async def _fetch_weather(lat: float, lng: float) -> dict:
         "rainChance": daily["precipitation_probability_max"][0],
         "wind": round(cur["wind_speed_10m"] / 3.6, 1),  # m/s (한국 일기예보 단위)
         "dust": dust,
+        "tomorrow": _tomorrow_open_meteo(daily),
     }
+
+
+def _tomorrow_open_meteo(daily: dict) -> dict | None:
+    """내일 예보 (\"내일 점심\"처럼 다른 날을 물을 때 쓴다)"""
+    try:
+        sky, _ = _sky(int(daily["weather_code"][1]))
+        return {"sky": sky, "min": round(daily["temperature_2m_min"][1]), "max": round(daily["temperature_2m_max"][1]),
+                "rainChance": daily["precipitation_probability_max"][1]}
+    except (KeyError, IndexError, TypeError):
+        return None
 
 
 async def weather(lat: float, lng: float) -> dict | None:
@@ -207,12 +239,12 @@ def describe(snap: dict) -> str:
     lines = [f"지금: {snap['date']} {snap['time']}, {snap['season']}{', 주말' if snap['weekend'] else ''}"]
     hour = snap["now"].hour
     if hour >= 22 or hour < 5:
-        lines.append("시간 주의: 지금은 대부분의 식당(양식·이탈리안·한정식·브런치·카페)이 문을 닫았거나 곧 닫는 시간. "
+        lines.append("시간 주의(지금 바로 갈 때만): 지금은 대부분의 식당(양식·이탈리안·한정식·브런치·카페)이 문을 닫았거나 곧 닫는 시간. "
                      "술집·이자카야·포차·바, 늦게까지 하는 고깃집·국밥·해장국·24시간 식당만 추천할 것.")
     elif hour >= 20:
-        lines.append("시간 주의: 식당은 곧 마지막 주문 시간(라스트 오더). 식사라면 늦게까지 하는 곳 위주로, 술집은 괜찮음.")
+        lines.append("시간 주의(지금 바로 갈 때만): 식당은 곧 마지막 주문 시간(라스트 오더). 식사라면 늦게까지 하는 곳 위주로, 술집은 괜찮음.")
     elif 15 <= hour < 17:
-        lines.append("시간 주의: 오후 브레이크 타임인 식당이 많은 시간.")
+        lines.append("시간 주의(지금 바로 갈 때만): 오후 브레이크 타임인 식당이 많은 시간.")
     w = snap["weather"]
     if w:
         lines.append(
@@ -221,6 +253,14 @@ def describe(snap: dict) -> str:
             + f"바람 {w['wind']}m/s"
             + (f", 미세먼지 {w['dust']}" if w["dust"] else "")
         )
+        t = w.get("tomorrow")
+        if hour < 5:
+            # 자정이 지난 새벽의 "내일"은 보통 날짜상 오늘 낮이다
+            lines.append(f"새벽이라 사용자가 말하는 '내일'은 보통 오늘({snap['now'].month}월 {snap['now'].day}일) 낮을 뜻한다. "
+                         "그 경우 날씨는 위의 '오늘 최저/최고'를 쓴다.")
+        elif t:
+            lines.append(f"내일 예보: {t['sky']}, 최저 {t['min']}°C / 최고 {t['max']}°C"
+                         + (f", 강수확률 {t['rainChance']}%" if t.get("rainChance") is not None else ""))
     else:
         lines.append("날씨: 정보를 가져오지 못했어요")
     return "\n".join(lines)

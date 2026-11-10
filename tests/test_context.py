@@ -59,6 +59,21 @@ def test_describe_without_weather():
     assert "시간 주의" not in text
 
 
+def test_describe_includes_tomorrow_forecast():
+    weather = {**COLD_RAIN, "tomorrow": {"sky": "맑음", "min": 2, "max": 11, "rainChance": 10}}
+    assert "내일 예보: 맑음, 최저 2°C / 최고 11°C, 강수확률 10%" in context.describe(snap(23, weather=weather))
+
+
+def test_after_midnight_tomorrow_means_today():
+    text = context.describe(snap(1, weather={**COLD_RAIN, "tomorrow": {"sky": "맑음", "min": 2, "max": 11, "rainChance": 10}}))
+    assert "'내일'은 보통 오늘(11월 10일) 낮" in text
+    assert "내일 예보" not in text
+
+
+def test_late_night_warning_is_only_for_going_now():
+    assert "시간 주의(지금 바로 갈 때만)" in context.describe(snap(23))
+
+
 def test_describe_hides_missing_rain_chance():
     text = context.describe(snap(12, weather={**COLD_RAIN, "rainChance": None}))
     assert "강수확률" not in text

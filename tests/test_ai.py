@@ -29,6 +29,26 @@ def test_trace_lines():
     assert reviews == "스키마야 후기 읽기"
 
 
-def test_system_prompt_has_time_first_rule():
-    assert "지금 시간에 문 열었을 곳인지가 가장 먼저다" in ai.SYSTEM_PROMPT
+def test_system_prompt_rules():
+    assert "지금 바로 가는 거라면 지금 문 열었을 곳인지가 가장 먼저다" in ai.SYSTEM_PROMPT
+    assert "내일 점심" in ai.SYSTEM_PROMPT  # 다른 시간을 말하면 그 시간 기준
+    assert "지도 위치는 장소를 말하지 않았을 때만" in ai.SYSTEM_PROMPT
     assert "연인·남자친구" in ai.SYSTEM_PROMPT
+
+
+def test_chat_answer_structured_picks():
+    text = ('{"intro": "내일 점심, 천호역 근처로 골라봤어요.", '
+            '"picks": [{"id": "kakao-2", "why": "조용해요"}, {"id": "없는-id", "why": "지어냄"}, {"id": "kakao-2", "why": "중복"}], '
+            '"tip": "점심엔 웨이팅이 있어요."}')
+    out = ai._chat_answer(text, FOUND)
+    assert out["intro"] == "내일 점심, 천호역 근처로 골라봤어요."
+    assert [p["place"]["name"] for p in out["picks"]] == ["스키마야"]  # 지어낸 id·중복은 버린다
+    assert out["picks"][0]["why"] == "조용해요"
+    assert [p["name"] for p in out["places"]] == ["스키마야"]
+    assert "1. 스키마야 — 조용해요" in out["reply"] and out["reply"].endswith("점심엔 웨이팅이 있어요.")
+
+
+def test_chat_answer_plain_text_fallback():
+    out = ai._chat_answer("만게츠 천호점을 추천해요.", FOUND)
+    assert out["picks"] == [] and out["intro"] == "만게츠 천호점을 추천해요."
+    assert [p["name"] for p in out["places"]] == ["만게츠 천호점"]
