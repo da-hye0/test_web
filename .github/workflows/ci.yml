@@ -1,0 +1,25 @@
+# CI: PR과 main 이외 브랜치 push마다 테스트
+# main은 deploy-dev.yml이 같은 테스트를 부른 뒤 배포한다. 배포 워크플로들도 이 파일을 재사용한다 (workflow_call)
+name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q

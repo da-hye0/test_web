@@ -20,15 +20,16 @@ gcloud services enable iamcredentials.googleapis.com sts.googleapis.com --projec
 gcloud iam service-accounts describe "$SA" --project "$PROJECT_ID" >/dev/null 2>&1 ||
   gcloud iam service-accounts create "$SA_NAME" --project "$PROJECT_ID" --display-name "GitHub Actions 배포 (matjip)"
 
-# 소스 배포(--source)에 필요한 권한: Cloud Run, Cloud Build, 이미지 저장소, 소스 버킷, 빌드 로그
+# 이미지 빌드(gcloud builds submit --pack)와 배포(--image)에 필요한 권한: Cloud Run, Cloud Build, 이미지 저장소, 소스 버킷, 빌드 로그
 for role in roles/run.admin roles/cloudbuild.builds.editor roles/artifactregistry.writer \
             roles/storage.admin roles/serviceusage.serviceUsageConsumer roles/logging.viewer; do
   gcloud projects add-iam-policy-binding "$PROJECT_ID" --member "serviceAccount:$SA" --role "$role" \
     --condition=None --quiet >/dev/null
 done
-# 배포할 때 서비스의 실행 계정으로 행동할 수 있어야 한다
-gcloud iam service-accounts add-iam-policy-binding "$RUNTIME_SA" --project "$PROJECT_ID" \
-  --member "serviceAccount:$SA" --role roles/iam.serviceAccountUser --quiet >/dev/null
+# 배포·빌드할 때 실행 계정(Cloud Run, Cloud Build 모두 $RUNTIME_SA)으로 행동할 수 있어야 한다
+# 실행 계정에 직접 붙이면 GCP가 거부해서 프로젝트 범위로 준다 (이 프로젝트의 서비스 계정은 이 둘뿐)
+gcloud projects add-iam-policy-binding "$PROJECT_ID" --member "serviceAccount:$SA" \
+  --role roles/iam.serviceAccountUser --condition=None --quiet >/dev/null
 
 gcloud iam workload-identity-pools describe "$POOL" --project "$PROJECT_ID" --location global >/dev/null 2>&1 ||
   gcloud iam workload-identity-pools create "$POOL" --project "$PROJECT_ID" --location global \
@@ -48,4 +49,4 @@ gcloud iam service-accounts add-iam-policy-binding "$SA" --project "$PROJECT_ID"
   --member "principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$POOL/attribute.repository/$REPO" \
   --quiet >/dev/null
 
-echo "준비 끝. 이제 태그를 push 하면 배포돼요: git tag v1.0.0 && git push origin v1.0.0"
+echo "준비 끝. main에 머지하면 Dev, v*-rc.* 태그는 Stg, v* 태그는 승인 후 Prd로 배포돼요."

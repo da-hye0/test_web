@@ -1,6 +1,7 @@
 # 사용자별 찜 목록 저장소
 # - Cloud Run(K_SERVICE 환경변수가 있음): Firestore REST API, 인증은 메타데이터 서버 토큰
 #   문서: favorites/{userKey} = { items: "<찜 목록 JSON 문자열>" }
+#   APP_ENV가 dev/stg면 컬렉션을 favorites-dev / favorites-stg로 나눠 운영 데이터를 건드리지 않는다
 # - 로컬: data/favorites.json
 import json
 import os
@@ -35,10 +36,17 @@ class FileStore:
 METADATA = "http://metadata.google.internal/computeMetadata/v1"
 
 
+def collection_name(app_env: str | None) -> str:
+    """환경별 찜 컬렉션 (운영이나 값이 없으면 favorites)"""
+    env = (app_env or "").strip().lower()
+    return "favorites" if env in ("", "prd", "prod", "production") else f"favorites-{env}"
+
+
 class FirestoreStore:
     def __init__(self) -> None:
         self.token: tuple[str, float] | None = None  # (값, 만료 시각)
         self.project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+        self.collection = collection_name(os.environ.get("APP_ENV"))
 
     async def _metadata(self, path: str):
         res = await client.get(f"{METADATA}/{path}", headers={"Metadata-Flavor": "Google"}, timeout=3)
@@ -56,7 +64,7 @@ class FirestoreStore:
 
     def _doc_url(self, key: str) -> str:
         return (f"https://firestore.googleapis.com/v1/projects/{self.project_id}"
-                f"/databases/(default)/documents/favorites/{quote(key, safe='')}")
+                f"/databases/(default)/documents/{self.collection}/{quote(key, safe='')}")
 
     async def get(self, key: str) -> list[dict]:
         token = await self._auth()

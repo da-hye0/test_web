@@ -1,0 +1,22 @@
+# Dev: main에 push(머지)할 때마다 테스트 → 커밋 이미지 빌드 → matjip-dev 배포
+name: Deploy Dev
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: test
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: development
+      service: matjip-dev
+      version: ${{ github.sha }}

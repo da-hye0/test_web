@@ -1,0 +1,38 @@
+# Prd: rc가 아닌 버전 태그를 push하면 (예: git tag v1.2.0 v1.2.0-rc.1^{} && git push origin v1.2.0)
+#      같은 커밋에 같은 버전의 rc 태그가 있는지 확인 → production 승인 대기 → Stg와 같은 이미지로 matjip 배포
+#      다시 빌드하지 않는다. 이미지가 없으면 실패
+name: Deploy Prd
+
+on:
+  push:
+    tags: ['v*', '!v*-rc.*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  # v1.2.0이면 같은 커밋에 v1.2.0-rc.N 태그가 있어야 한다 (스테이징을 거친 커밋만 운영으로)
+  check-rc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require rc tag on this commit
+        run: |
+          RC=$(git tag --points-at "$GITHUB_SHA" --list "${GITHUB_REF_NAME}-rc.*")
+          if [ -z "$RC" ]; then
+            echo "::error::${GITHUB_REF_NAME}가 붙은 커밋에 ${GITHUB_REF_NAME}-rc.N 태그가 없어요. 먼저 스테이징에 배포해 주세요."
+            exit 1
+          fi
+          echo "스테이징 태그: $RC"
+
+  deploy:
+    needs: check-rc
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: production
+      service: matjip
+      version: ${{ github.ref_name }}
+      build: false

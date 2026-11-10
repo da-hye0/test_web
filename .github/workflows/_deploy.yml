@@ -1,0 +1,95 @@
+# 배포 공통 단계 (deploy-dev / deploy-stg / deploy-prd가 부른다)
+# 한 번 빌드, 여러 번 배포: 이미지는 커밋 SHA 태그로 Artifact Registry에 한 번만 올리고 Stg·Prd는 그 이미지를 그대로 쓴다
+# GitHub → GCP 인증은 Workload Identity Federation (저장소에 키를 두지 않는다, 준비는 scripts/setup-github-deploy.sh)
+name: Deploy (공통)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: GitHub Environment 이름 (production은 승인자가 승인해야 진행)
+        type: string
+        required: true
+      service:
+        description: Cloud Run 서비스 이름
+        type: string
+        required: true
+      version:
+        description: 리비전 이름·라벨에 붙일 버전 (태그 이름이나 커밋)
+        type: string
+        required: true
+      build:
+        description: 같은 SHA 이미지가 없을 때 빌드할지 (false면 없을 때 실패)
+        type: boolean
+        default: true
+
+env:
+  PROJECT_ID: project-d813a5b1-563c-4745-80a
+  REGION: asia-northeast1
+  WIF_PROVIDER: projects/731281123801/locations/global/workloadIdentityPools/github/providers/github-oidc
+  DEPLOY_SA: github-deployer@project-d813a5b1-563c-4745-80a.iam.gserviceaccount.com
+  IMAGE: asia-northeast1-docker.pkg.dev/project-d813a5b1-563c-4745-80a/matjip/server:${{ github.sha }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    # 같은 환경에 배포가 겹치지 않게 (진행 중인 배포는 끊지 않고 뒤에 줄 선다)
+    concurrency:
+      group: deploy-${{ inputs.service }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Find image
+        id: image
+        run: |
+          if gcloud artifacts docker images describe "$IMAGE" --project "$PROJECT_ID" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "이미 있는 이미지를 씀: $IMAGE"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stop if image is missing
+        if: steps.image.outputs.exists == 'false' && !inputs.build
+        run: |
+          echo "::error::$IMAGE 이미지가 없어요. 운영에는 스테이징(rc)에서 확인한 이미지만 나갈 수 있어요."
+          exit 1
+
+      # buildpacks로 이미지만 만든다 (배포는 다음 단계에서 --image로)
+      - name: Build image
+        if: steps.image.outputs.exists == 'false' && inputs.build
+        run: |
+          gcloud builds submit --project "$PROJECT_ID" --region "$REGION" --quiet \
+            --pack "image=$IMAGE"
+
+      # 환경 변수(API 키 등)는 서비스에 이미 있으니 그대로 두고 이미지만 바꾼다
+      # 리비전 이름에 버전을 붙여 콘솔에서 바로 보이게 한다 (v1.2.0 → matjip-v1-2-0-<실행번호>-<재시도>)
+      - name: Deploy to Cloud Run
+        id: deploy
+        env:
+          VERSION_RAW: ${{ inputs.version }}
+          SERVICE: ${{ inputs.service }}
+        run: |
+          VERSION=$(echo "$VERSION_RAW" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9\n' '-' | cut -c1-30)
+          gcloud run deploy "$SERVICE" --image "$IMAGE" \
+            --project "$PROJECT_ID" --region "$REGION" --quiet \
+            --revision-suffix "${VERSION}-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" \
+            --update-labels "version=${VERSION},commit=${GITHUB_SHA::7}"
+          URL=$(gcloud run services describe "$SERVICE" --project "$PROJECT_ID" --region "$REGION" --format 'value(status.url)')
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test
+        env:
+          URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          curl -fsS --retry 5 --retry-delay 5 "$URL/api/config"
+          curl -fsS "$URL/api/me" | grep -q '"user"'

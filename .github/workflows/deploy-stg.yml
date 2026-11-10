@@ -1,0 +1,23 @@
+# Stg: rc 태그를 push하면 (예: git tag v1.2.0-rc.1 && git push origin v1.2.0-rc.1)
+#      테스트 → 그 커밋 이미지(없으면 빌드) → matjip-stg 배포
+name: Deploy Stg
+
+on:
+  push:
+    tags: ['v*-rc.*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: test
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: staging
+      service: matjip-stg
+      version: ${{ github.ref_name }}
